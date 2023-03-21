@@ -68,8 +68,15 @@ public class YaciCardanoContainer extends GenericContainer<YaciCardanoContainer>
                 .map(funding -> funding.getAddress() + ":" + funding.getAdaValue())
                 .collect(Collectors.joining(","));
 
+        //Override default wait strategy if initial funding
+        waitingFor(Wait.forHttp("/api/v1/addresses/" + fundings[0].getAddress() + "/utxos")
+                .forPort(STORE_PORT)
+                .forResponsePredicate(s -> s.contains(fundings[0].getAddress()))
+                .forStatusCode(200)
+                .withStartupTimeout(Duration.ofSeconds(90)));
+
         addEnv("topup_addresses", topupAddresses);
-        System.out.println(getEnv());
+
         return this;
     }
 

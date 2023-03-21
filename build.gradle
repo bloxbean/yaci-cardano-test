@@ -1,34 +1,50 @@
 plugins {
-    id 'java'
+    id 'java-library'
+    id 'maven-publish'
     id 'signing'
 }
-
-group 'com.bloxbean.cardano'
-version '1.0-SNAPSHOT'
 
 repositories {
     mavenLocal()
     mavenCentral()
 }
 
+compileJava {
+    sourceCompatibility = '11'
+    targetCompatibility = '11'
+
+    options.compilerArgs += ["-Aproject=${project.group}/${project.name}"]
+}
+
+
 dependencies {
-    implementation "org.testcontainers:testcontainers:1.17.6"
-    implementation "org.slf4j:slf4j-api:2.0.6"
+    api("org.testcontainers:testcontainers:1.17.6") {
+        exclude group: 'com.fasterxml.jackson.core', module: 'jackson-annotations'
+    }
+    api ("org.testcontainers:junit-jupiter:1.17.6") {
+        exclude group: 'com.fasterxml.jackson.core', module: 'jackson-annotations'
+    }
+    api 'org.assertj:assertj-core:3.24.2'
 
     compileOnly 'com.bloxbean.cardano:cardano-client-lib:0.4.3'
     compileOnly 'com.bloxbean.cardano:cardano-client-backend:0.4.3'
-    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
-    implementation 'com.squareup.retrofit2:converter-jackson:2.9.0'
-    implementation 'org.assertj:assertj-core:3.21.0'
+
+    implementation('com.squareup.retrofit2:retrofit:2.9.0') {
+        exclude group: 'com.squareup.okhttp3', module: 'okhttp'
+    }
+    implementation('com.squareup.retrofit2:converter-jackson:2.9.0') {
+        exclude group: 'com.fasterxml.jackson.core', module: 'jackson-core'
+        exclude group: 'com.fasterxml.jackson.core', module: 'jackson-databind'
+        exclude group: 'com.fasterxml.jackson.core', module: 'jackson-annotations'
+    }
+    implementation('com.squareup.okhttp3:okhttp:4.10.0')
 
     compileOnly 'org.projectlombok:lombok:1.18.24'
     annotationProcessor 'org.projectlombok:lombok:1.18.24'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
-    testImplementation "org.testcontainers:testcontainers:1.17.6"
-    testImplementation "org.testcontainers:junit-jupiter:1.17.6"
-    testImplementation 'org.slf4j:slf4j-simple:2.0.6'
+    testImplementation 'org.slf4j:slf4j-simple:2.0.7'
 
     testImplementation 'com.bloxbean.cardano:cardano-client-lib:0.4.3'
     testImplementation 'com.bloxbean.cardano:cardano-client-backend:0.4.3'
@@ -37,6 +53,79 @@ dependencies {
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.24'
 }
 
+tasks.withType(Javadoc) {
+    options.encoding = 'UTF-8'
+}
+
+task sourceJar(type: Jar) {
+    classifier "sources"
+    from sourceSets.main.allJava
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier "javadoc"
+    from javadoc.destinationDir
+}
+
 test {
     useJUnitPlatform()
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifact(sourceJar) {
+                classifier = 'sources'
+            }
+            artifact(javadocJar) {
+                classifier = 'javadoc'
+            }
+            pom {
+                name = 'Yaci Cardano Test'
+                description = 'Make Java app testing on Cardano blockchain a breeze with Yaci Cardano Test Java library'
+                url = 'https://github.com/bloxbean/yaci-cardano-test'
+                licenses {
+                    license {
+                        name = 'The MIT License'
+                        url = 'http://www.opensource.org/licenses/mit-license.php'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'satran004'
+                        name = 'Satya'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git://github.com/bloxbean/yaci-cardano-test'
+                    developerConnection = 'scm:git:ssh://git@github.com/bloxbean/yaci-cardano-test'
+                    url = 'https://github.com/bloxbean/yaci-cardano-test'
+                }
+            }
+        }
+    }
+
+    repositories {
+        String ossrhUsername = System.getenv('MAVEN_USERNAME')
+        String ossrhPassword = System.getenv('MAVEN_PASSWORD')
+
+        maven {
+            def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+            def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
+            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+            credentials {
+                username ossrhUsername
+                password ossrhPassword
+            }
+        }
+    }
+}
+
+ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
+
+if (isReleaseVersion && !project.hasProperty("skipSigning")) {
+    signing {
+        sign publishing.publications
+    }
 }

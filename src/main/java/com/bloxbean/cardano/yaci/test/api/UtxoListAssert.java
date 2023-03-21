@@ -2,11 +2,11 @@ package com.bloxbean.cardano.yaci.test.api;
 
 import com.bloxbean.cardano.client.api.model.Amount;
 import com.bloxbean.cardano.client.api.model.Utxo;
+import com.bloxbean.cardano.client.plutus.impl.DefaultPlutusObjectConverter;
 import com.bloxbean.cardano.client.transaction.spec.Asset;
 import com.bloxbean.cardano.client.util.AssetUtil;
 import lombok.NonNull;
 import org.assertj.core.api.ListAssert;
-import org.assertj.core.api.PredicateAssert;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
@@ -18,11 +18,22 @@ import java.util.stream.Collectors;
 import static com.bloxbean.cardano.client.common.CardanoConstants.LOVELACE;
 import static com.bloxbean.cardano.yaci.test.api.helper.YaciTestHelper.amounts;
 
+/**
+ * Assertions for list of {@link Utxo}
+ */
 public class UtxoListAssert extends ListAssert<Utxo> {
     public UtxoListAssert(List<Utxo> utxos) {
         super(utxos);
     }
 
+    /**
+     * Verifies that asset with given policy id and asset name exists
+     *
+     * @param policyId  Policy Id of the asset
+     * @param assetName Asset name
+     * @return this assertion object
+     * @throws AssertionError - If utxo list doesn't contain multiasset
+     */
     public UtxoListAssert containsMultiAsset(@NonNull String policyId, @NonNull String assetName) {
         List<Amount> amounts = amounts((List<Utxo>) actual);
         if (amounts == null) amounts = Collections.emptyList();
@@ -38,6 +49,15 @@ public class UtxoListAssert extends ListAssert<Utxo> {
         return this;
     }
 
+    /**
+     * Verifies that asset has expected balance
+     *
+     * @param policyId        policy id of the asset
+     * @param assetName       asset name of the asset
+     * @param expectedBalance balance to verify
+     * @return this assertion object
+     * @throws AssertionError - If asset balance doesn't match
+     */
     public UtxoListAssert hasAssetBalance(@NonNull String policyId, @NonNull String assetName, @NonNull BigInteger expectedBalance) {
         isNotNull();
 
@@ -53,6 +73,15 @@ public class UtxoListAssert extends ListAssert<Utxo> {
         return this;
     }
 
+    /**
+     * Verifies predicate evaluates to true for asset balance
+     *
+     * @param policyId  policy id of the asset
+     * @param assetName asset name of the asset
+     * @param predicate predicate to check against asset balance
+     * @return this assertion object
+     * @throws AssertionError - If predicate evaluates to false
+     */
     public UtxoListAssert hasAssetBalance(@NonNull String policyId, @NonNull String assetName, @NonNull Predicate<BigInteger> predicate) {
         isNotNull();
 
@@ -68,6 +97,13 @@ public class UtxoListAssert extends ListAssert<Utxo> {
         return this;
     }
 
+    /**
+     * Verifies lovelace balance
+     *
+     * @param expectedBalance balance to verify
+     * @return this assertion object
+     * @throws AssertionError - If expected lovelace balance doesn't match with actual balance
+     */
     public UtxoListAssert hasLovelaceBalance(@NonNull BigInteger expectedBalance) {
         List<Amount> amounts = amounts((List<Utxo>) actual);
 
@@ -80,6 +116,13 @@ public class UtxoListAssert extends ListAssert<Utxo> {
         return this;
     }
 
+    /**
+     * Verifies predicate evaluate to true for lovelace balance
+     *
+     * @param predicate predicate to check lovelace balance
+     * @return this assertion object
+     * @throws AssertionError - If predicate evaluates to false
+     */
     public UtxoListAssert hasLovelaceBalance(@NonNull Predicate<BigInteger> predicate) {
         List<Amount> amounts = amounts((List<Utxo>) actual);
 
@@ -99,5 +142,61 @@ public class UtxoListAssert extends ListAssert<Utxo> {
                 .map(amount -> amount.getQuantity())
                 .orElse(BigInteger.ZERO);
         return actual;
+    }
+
+    /**
+     * Verifies if utxo list contains the given inline datum.
+     *
+     * @param datumObj Datum object. An object of type PlutusData or object of a class with PlutusData annotations
+     *                 (@{@link com.bloxbean.cardano.client.plutus.annotation.PlutusField}, {@link com.bloxbean.cardano.client.plutus.annotation.Constr})
+     * @return this assertion object
+     * @throws AssertionError - If datum object not found in inlineDatum field
+     */
+    public UtxoListAssert containsInlineDatum(@NonNull Object datumObj) {
+        isNotNull();
+
+        String datumCborHex = new DefaultPlutusObjectConverter().toPlutusData(datumObj).serializeToHex();
+        boolean found = actual.stream()
+                .anyMatch(utxo -> datumCborHex.equals(utxo.getInlineDatum()));
+        if (!found)
+            failWithMessage("Expected but not found.\n InlineDatum : <%s>", datumCborHex);
+
+        return this;
+    }
+
+    /**
+     * Verifies if utxo list contains given datumHash
+     *
+     * @param datumHash Datum Hash
+     * @return this assertion object
+     * @throws AssertionError - If datumHash not found
+     */
+    public UtxoListAssert containsDatumHash(@NonNull String datumHash) {
+        isNotNull();
+
+        boolean found = actual.stream()
+                .anyMatch(utxo -> datumHash.equals(utxo.getDataHash()));
+        if (!found)
+            failWithMessage("Expected but not found.\n Datum Hash : <%s>", datumHash);
+
+        return this;
+    }
+
+    /**
+     * Verifies if utxo list contains referenceScriptHash
+     *
+     * @param referenceScriptHash reference script hash
+     * @return this assertion object
+     * @throws AssertionError - If reference script hash not found
+     */
+    public UtxoListAssert containsReferenceScriptHash(@NonNull String referenceScriptHash) {
+        isNotNull();
+
+        boolean found = actual.stream()
+                .anyMatch(utxo -> referenceScriptHash.equals(utxo.getReferenceScriptHash()));
+        if (!found)
+            failWithMessage("Expected but not found.\n ReferenceScriptHash : <%s>", referenceScriptHash);
+
+        return this;
     }
 }

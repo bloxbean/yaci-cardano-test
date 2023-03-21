@@ -2,6 +2,11 @@ package com.bloxbean.cardano.yaci.test.api;
 
 import com.bloxbean.cardano.client.api.model.Amount;
 import com.bloxbean.cardano.client.api.model.Utxo;
+import com.bloxbean.cardano.client.config.Configuration;
+import com.bloxbean.cardano.client.plutus.annotation.Constr;
+import com.bloxbean.cardano.client.plutus.annotation.PlutusField;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
@@ -73,6 +78,50 @@ class UtxoListAssertTest {
         });
     }
 
+    @Test
+    void containsInlineDatum_not_exists() throws Exception {
+        List<Utxo> utxos = testUtxosWithDatumsAndRefScriptHash();
+        Datum1 datum1 = new Datum1(5, 20);
+
+        org.junit.jupiter.api.Assertions.assertThrows(AssertionError.class, () -> {
+            assertMe(utxos).containsInlineDatum(datum1);
+        });
+    }
+
+    @Test
+    void containsDatumHash() throws Exception {
+        List<Utxo> utxos = testUtxosWithDatumsAndRefScriptHash();
+        Datum1 datum1 = new Datum1(5, 10);
+
+        assertMe(utxos).containsDatumHash(Configuration.INSTANCE.getPlutusObjectConverter().toPlutusData(datum1).getDatumHash());
+    }
+
+    @Test
+    void containsDatumHash_not_exists() throws Exception {
+        List<Utxo> utxos = testUtxosWithDatumsAndRefScriptHash();
+        Datum1 datum1 = new Datum1(5, 20);
+
+        org.junit.jupiter.api.Assertions.assertThrows(AssertionError.class, () -> {
+            assertMe(utxos).containsDatumHash(Configuration.INSTANCE.getPlutusObjectConverter().toPlutusData(datum1).getDatumHash());
+        });
+    }
+
+    @Test
+    void containsReferenceScriptHash() throws Exception {
+        List<Utxo> utxos = testUtxosWithDatumsAndRefScriptHash();
+
+        assertMe(utxos).containsReferenceScriptHash("495ccc869ba300c");
+    }
+
+    @Test
+    void containsReferenceScriptHash_not_exists() throws Exception {
+        List<Utxo> utxos = testUtxosWithDatumsAndRefScriptHash();
+
+        org.junit.jupiter.api.Assertions.assertThrows(AssertionError.class, () -> {
+            assertMe(utxos).containsReferenceScriptHash("555ccc869ba300c");
+        });
+    }
+
     @NotNull
     private static List<Utxo> testUtxos() {
         Utxo utxo1 = Utxo.builder()
@@ -105,4 +154,65 @@ class UtxoListAssertTest {
         return utxos;
     }
 
+    @NotNull
+    private static List<Utxo> testUtxosWithDatumsAndRefScriptHash() throws Exception {
+        Utxo utxo1 = Utxo.builder()
+                .txHash("568f91e262553950230d77cd27e30dfbf7a1dcaef96c40329ab7737858a76fa8")
+                .outputIndex(0)
+                .amount(List.of(new Amount(LOVELACE, adaToLovelace(100))))
+                .build();
+        Utxo utxo2 = Utxo.builder()
+                .txHash("ff8f7e4753b93cb380d5a30a3c08fe7b13d15043154d8ca037092fdfe5702bcb")
+                .outputIndex(0)
+                .amount(List.of(
+                        new Amount(LOVELACE, adaToLovelace(2)),
+                        new Amount("a9a750f73f678495ccc869ba300c983814d3079367f0cf909afea8d6616263", BigInteger.valueOf(3000)),
+                        new Amount("a9a750f73f678495ccc869ba300c983814d3079367f0cf909afea8d6616264", BigInteger.valueOf(2000)),
+                        new Amount("96662071b76a743e44c2267e85f5fa86f9a01a1bea53be5dd812378f57455448", BigInteger.valueOf(100))
+                ))
+                .dataHash(Configuration.INSTANCE.getPlutusObjectConverter().toPlutusData(new Datum1(5, 10)).getDatumHash())
+                .referenceScriptHash("495ccc869ba300c")
+                .build();
+
+        Utxo utxo3 = Utxo.builder()
+                .txHash("ff8f7e4753b93cb380d5a30a3c08fe7b13d15043154d8ca037092fdfe5702bcb")
+                .outputIndex(0)
+                .amount(List.of(
+                        new Amount(LOVELACE, adaToLovelace(5)),
+                        new Amount("a9a750f73f678495ccc869ba300c983814d3079367f0cf909afea8d6616264", BigInteger.valueOf(4000)),
+                        new Amount("96662071b76a743e44c2267e85f5fa86f9a01a1bea53be5dd812378f74657374", BigInteger.valueOf(900))
+                ))
+                .inlineDatum(Configuration.INSTANCE.getPlutusObjectConverter().toPlutusData(new Datum1(5, 10)).serializeToHex())
+                .build();
+
+        Utxo utxo4 = Utxo.builder()
+                .txHash("ee8f7e4753b93cb380d5a30a3c08fe7b13d15043154d8ca037092fdfe5702bcb")
+                .outputIndex(0)
+                .amount(List.of(
+                        new Amount(LOVELACE, adaToLovelace(5))
+                ))
+                .inlineDatum(Configuration.INSTANCE.getPlutusObjectConverter().toPlutusData(new Datum2("John")).serializeToHex())
+                .build();
+        List<Utxo> utxos = List.of(utxo1, utxo2, utxo3, utxo4);
+        return utxos;
+    }
+
+    @Data
+    @AllArgsConstructor
+    @Constr(alternative = 1)
+    static class Datum1 {
+        @PlutusField
+        long a;
+
+        @PlutusField
+        long b;
+    }
+
+    @Data
+    @AllArgsConstructor
+    @Constr(alternative = 1)
+    static class Datum2 {
+        @PlutusField
+        String name;
+    }
 }

@@ -12,6 +12,9 @@ import org.jetbrains.annotations.NotNull;
 import java.math.BigInteger;
 import java.util.List;
 
+/**
+ * Assertions for {@link YaciCardanoContainer}
+ */
 public class CardanoContainerAssert extends AbstractAssert<CardanoContainerAssert, YaciCardanoContainer> {
     private YaciTestHelper testHelper;
     protected CardanoContainerAssert(YaciCardanoContainer yaciCardanoContainer) {
@@ -19,6 +22,14 @@ public class CardanoContainerAssert extends AbstractAssert<CardanoContainerAsser
         testHelper = actual.getTestHelper();
     }
 
+    /**
+     * Verifies if the address has expected lovelace balance
+     *
+     * @param address address to check
+     * @param expectedBalance balance to verify
+     * @return this assertion object
+     * @throws AssertionError - If expected balance doesn't match with actual balance
+     */
     public CardanoContainerAssert hasLovelaceBalance(@NonNull String address, @NotNull BigInteger expectedBalance) {
         isNotNull();
 
@@ -29,6 +40,16 @@ public class CardanoContainerAssert extends AbstractAssert<CardanoContainerAsser
         return this;
     }
 
+    /**
+     * Verifies if the address has expected balance for the asset with given policy and assetName.
+     *
+     * @param address address to check
+     * @param policy policy id of the asset
+     * @param asssetName asset name of the asset
+     * @param expectedBalance balance to verify
+     * @return this assertion object
+     * @throws AssertionError - If expected balance doesn't match with actual balance
+     */
     public CardanoContainerAssert hasAssetBalance(@NonNull String address, @NonNull String policy, @NotNull String asssetName,
                                                   @NotNull BigInteger expectedBalance) {
         isNotNull();
@@ -42,6 +63,11 @@ public class CardanoContainerAssert extends AbstractAssert<CardanoContainerAsser
         return this;
     }
 
+    /**
+     * Returns {@link UtxoListAssert}
+     * @param address address
+     * @return UtxoListAsset
+     */
     public UtxoListAssert utxos(@NonNull String address) {
         isNotNull();
 
