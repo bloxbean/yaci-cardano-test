@@ -34,6 +34,8 @@ public class YaciCardanoContainer extends GenericContainer<YaciCardanoContainer>
     public static final int NODE_PORT = 3001;
     private static float DEFAULT_SLOT_LENGTH = 0.15f;
 
+    private static long waitTimeout = 60;
+
     public YaciCardanoContainer() {
         this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
@@ -53,8 +55,8 @@ public class YaciCardanoContainer extends GenericContainer<YaciCardanoContainer>
             waitingFor(Wait.forHttp("/api/v1/epochs/1/parameters")
                     .forPort(STORE_PORT)
                     .forStatusCode(200)
-                    .withStartupTimeout(Duration.ofSeconds(90)));
-            withStartupTimeout(Duration.ofSeconds(90));
+                    .withStartupTimeout(Duration.ofSeconds(waitTimeout)));
+            withStartupTimeout(Duration.ofSeconds(waitTimeout));
         } else {
             throw new IllegalArgumentException("Invalid slotLength. Value should be between 0.1 to 1");
         }
@@ -73,7 +75,7 @@ public class YaciCardanoContainer extends GenericContainer<YaciCardanoContainer>
                 .forPort(STORE_PORT)
                 .forResponsePredicate(s -> s.contains(fundings[0].getAddress()))
                 .forStatusCode(200)
-                .withStartupTimeout(Duration.ofSeconds(90)));
+                .withStartupTimeout(Duration.ofSeconds(waitTimeout)));
 
         addEnv("topup_addresses", topupAddresses);
 
