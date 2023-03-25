@@ -382,7 +382,7 @@ class TransactionHelper {
         try {
             if (result.isSuccessful()) { //Wait for transaction to be mined
                 int count = 0;
-                while (count < 180) {
+                while (count < 5) {
                     Result<TransactionContent> txnResult = yaciCardanoContainer.getTransactionService().getTransaction(result.getValue());
                     if (txnResult.isSuccessful()) {
                         System.out.println(JsonUtil.getPrettyJson(txnResult.getValue().getHash()));

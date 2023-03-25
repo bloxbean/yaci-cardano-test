@@ -46,7 +46,7 @@ class TransactionHelperTest {
     @Test
     void transferAda() {
         String receiver = "addr_test1qqp6l53xshenlc939a0q74rd09e7dva8lke0fvs3a7ld5f7y7h8vnukjnluapukncvvpxvjgg4nlwu34w3ywvzngw99sy2rpy3";
-        testHelper.getTransactionHelper().transferAda(receiver, 10000);
+        testHelper.transferAda(receiver, 10000);
 
         assertMe(cardanoContainer).hasLovelaceBalance(receiver, adaToLovelace(10000));
     }
@@ -54,7 +54,7 @@ class TransactionHelperTest {
     @Test
     void mintToken() throws Exception {
         String receiver = "addr_test1qqp6l53xshenlc939a0q74rd09e7dva8lke0fvs3a7ld5f7y7h8vnukjnluapukncvvpxvjgg4nlwu34w3ywvzngw99sy2rpy3";
-        Policy policy = testHelper.getTransactionHelper().mintToken(receiver, "TestToken", 10000).get();
+        Policy policy = testHelper.mintToken(receiver, "TestToken", 10000).get();
 
         assertMe(cardanoContainer).hasAssetBalance(receiver, policy.getPolicyId(), "TestToken", BigInteger.valueOf(10000));
     }
@@ -62,8 +62,8 @@ class TransactionHelperTest {
     @Test
     void lockFund_withAmounts() throws Exception {
         Account account = new Account(Networks.testnet());
-        testHelper.getTransactionHelper().transferAda(account.baseAddress(), 100);
-        Policy policy = testHelper.getTransactionHelper().mintToken(account.baseAddress(), "TestToken", 10000).get();
+        testHelper.transferAda(account.baseAddress(), 100);
+        Policy policy = testHelper.mintToken(account.baseAddress(), "TestToken", 10000).get();
         PlutusV1Script plutusScript = PlutusV1Script.builder()
                 .type("PlutusScriptV1")
                 .cborHex("4e4d01000033222220051200120011")
@@ -74,7 +74,7 @@ class TransactionHelperTest {
                 new Amount(LOVELACE, adaToLovelace(4)), new Amount(unit, BigInteger.valueOf(50)));
 
         PlutusData plutusData = BigIntPlutusData.of(400);
-        Optional<String> txId = testHelper.getTransactionHelper().lockFund(account, plutusScript, amounts, plutusData);
+        Optional<String> txId = testHelper.lockFund(account, plutusScript, amounts, plutusData);
 
         assertMe(cardanoContainer).utxos(scriptAddress).hasLovelaceBalance(balance -> balance.compareTo(adaToLovelace(4)) >= 0);
         assertMe(cardanoContainer).utxos(scriptAddress).hasAssetBalance(policy.getPolicyId(), "TestToken", BigInteger.valueOf(50));
@@ -90,9 +90,9 @@ class TransactionHelperTest {
                 .build();
         String scriptAddress = AddressProvider.getEntAddress(plutusScript, Networks.testnet()).toBech32();
 
-        testHelper.getTransactionHelper().transferAda(account.baseAddress(), 100);
-        Policy policy1 = testHelper.getTransactionHelper().mintToken(account.baseAddress(), "TestToken1", 10000).get();
-        Policy policy2 = testHelper.getTransactionHelper().mintToken(account.baseAddress(), "TestToken2", 5000).get();
+        testHelper.transferAda(account.baseAddress(), 100);
+        Policy policy1 = testHelper.mintToken(account.baseAddress(), "TestToken1", 10000).get();
+        Policy policy2 = testHelper.mintToken(account.baseAddress(), "TestToken2", 5000).get();
 
         Value value = Value.builder()
                 .coin(adaToLovelace(4))
@@ -106,7 +106,7 @@ class TransactionHelperTest {
                 )).build();
 
         PlutusData plutusData = BigIntPlutusData.of(400);
-        Optional<String> txId = testHelper.getTransactionHelper().lockFund(account, plutusScript, value, plutusData);
+        Optional<String> txId = testHelper.lockFund(account, plutusScript, value, plutusData);
 
         assertMe(cardanoContainer).utxos(scriptAddress).hasLovelaceBalance(balance -> balance.compareTo(adaToLovelace(4)) >= 0);
         assertMe(cardanoContainer).utxos(scriptAddress).hasAssetBalance(policy1.getPolicyId(), "TestToken1", BigInteger.valueOf(60));
@@ -116,7 +116,7 @@ class TransactionHelperTest {
 
     @Test
     void lockFund_fromFaucetAcc_withAmounts() throws Exception {
-        Policy policy = testHelper.getTransactionHelper().mintToken("FaucetToken", 40000).get();
+        Policy policy = testHelper.mintToken("FaucetToken", 40000).get();
         PlutusV1Script plutusScript = PlutusV1Script.builder()
                 .type("PlutusScriptV1")
                 .cborHex("4e4d01000033222220051200120011")
@@ -127,7 +127,7 @@ class TransactionHelperTest {
                 new Amount(LOVELACE, adaToLovelace(4)), new Amount(unit, BigInteger.valueOf(50)));
 
         PlutusData plutusData = BigIntPlutusData.of(900);
-        Optional<String> txId = testHelper.getTransactionHelper().lockFund(plutusScript, amounts, plutusData);
+        Optional<String> txId = testHelper.lockFund(plutusScript, amounts, plutusData);
 
         assertMe(cardanoContainer).utxos(scriptAddress).hasLovelaceBalance(balance -> balance.compareTo(adaToLovelace(4)) >= 0);
         assertMe(cardanoContainer).utxos(scriptAddress).hasAssetBalance(policy.getPolicyId(), "FaucetToken", BigInteger.valueOf(50));
@@ -142,8 +142,8 @@ class TransactionHelperTest {
                 .build();
         String scriptAddress = AddressProvider.getEntAddress(plutusScript, Networks.testnet()).toBech32();
 
-        Policy policy1 = testHelper.getTransactionHelper().mintToken("FaucetToken1", 10000).get();
-        Policy policy2 = testHelper.getTransactionHelper().mintToken("FaucetToken2", 5000).get();
+        Policy policy1 = testHelper.mintToken("FaucetToken1", 10000).get();
+        Policy policy2 = testHelper.mintToken("FaucetToken2", 5000).get();
 
         Value value = Value.builder()
                 .coin(adaToLovelace(4))
@@ -157,7 +157,7 @@ class TransactionHelperTest {
                 )).build();
 
         PlutusData plutusData = BigIntPlutusData.of(400);
-        Optional<String> txId = testHelper.getTransactionHelper().lockFund(plutusScript, value, plutusData);
+        Optional<String> txId = testHelper.lockFund(plutusScript, value, plutusData);
 
         assertMe(cardanoContainer).utxos(scriptAddress).hasLovelaceBalance(balance -> balance.compareTo(adaToLovelace(4)) >= 0);
         assertMe(cardanoContainer).utxos(scriptAddress).hasAssetBalance(policy1.getPolicyId(), "FaucetToken1", BigInteger.valueOf(60));
@@ -172,7 +172,7 @@ class TransactionHelperTest {
                 .cborHex("49480100002221200101")
                 .build();
 
-        Optional<Utxo> utxo = testHelper.getTransactionHelper().createReferenceScriptTx(plutusScript, 3);
+        Optional<Utxo> utxo = testHelper.createReferenceScriptTx(plutusScript, 3);
         assertMe(utxo.get()).containsReferenceScript(plutusScript);
     }
 

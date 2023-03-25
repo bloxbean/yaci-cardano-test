@@ -36,6 +36,8 @@ public class YaciCardanoContainer extends GenericContainer<YaciCardanoContainer>
 
     private static long waitTimeout = 60;
 
+    private YaciTestHelper testHelper;
+
     public YaciCardanoContainer() {
         this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
@@ -138,6 +140,8 @@ public class YaciCardanoContainer extends GenericContainer<YaciCardanoContainer>
     }
 
     public YaciTestHelper getTestHelper() {
-        return new YaciTestHelper(this);
+        if (testHelper == null)
+            testHelper = new YaciTestHelper(this);
+        return testHelper;
     }
 }

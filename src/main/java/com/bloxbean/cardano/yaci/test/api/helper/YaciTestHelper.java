@@ -18,11 +18,12 @@ import static com.bloxbean.cardano.client.common.CardanoConstants.LOVELACE;
 /**
  * Provides test utility methods
  */
-public class YaciTestHelper {
+public class YaciTestHelper extends TransactionHelper {
     private YaciCardanoContainer container;
     private TransactionHelper transactionHelper;
 
     public YaciTestHelper(YaciCardanoContainer yaciCardanoContainer) {
+        super(yaciCardanoContainer);
         this.container = yaciCardanoContainer;
     }
 
@@ -111,11 +112,5 @@ public class YaciTestHelper {
                 .filter(utxo -> utxo.getReferenceScriptHash() != null)
                 .map(utxo -> utxo.getReferenceScriptHash())
                 .collect(Collectors.toList());
-    }
-
-    public TransactionHelper getTransactionHelper() {
-        if (transactionHelper == null)
-            this.transactionHelper = new TransactionHelper(container);
-        return transactionHelper;
     }
 }
