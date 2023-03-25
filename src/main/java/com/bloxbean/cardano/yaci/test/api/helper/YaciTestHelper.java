@@ -20,7 +20,6 @@ import static com.bloxbean.cardano.client.common.CardanoConstants.LOVELACE;
  */
 public class YaciTestHelper extends TransactionHelper {
     private YaciCardanoContainer container;
-    private TransactionHelper transactionHelper;
 
     public YaciTestHelper(YaciCardanoContainer yaciCardanoContainer) {
         super(yaciCardanoContainer);

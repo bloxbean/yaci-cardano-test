@@ -168,7 +168,7 @@ public class YaciContainerTest {
     }
 
     @Test
-    void transferTest1() throws Exception {
+    void transferTest() throws Exception {
         String senderAddress = account.baseAddress();
         log.info("Sender address : " + senderAddress);
 
