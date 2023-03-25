@@ -2,20 +2,17 @@ package com.bloxbean.cardano.yaci.test.backend.http;
 
 import com.bloxbean.cardano.client.api.model.ProtocolParams;
 import com.bloxbean.cardano.client.backend.model.EpochContent;
-import retrofit2.Call;
-import retrofit2.http.GET;
-import retrofit2.http.Header;
-import retrofit2.http.Path;
+import feign.Param;
+import feign.RequestLine;
 
 public interface EpochApi {
+    @RequestLine("GET epochs/latest")
+    EpochContent getLatestEpoch();
 
-    @GET("epochs/latest")
-    Call<EpochContent> getLatestEpoch(@Header("project_id")  String projectId);
+    @RequestLine("GET epochs/{number}")
+    EpochContent getEpochByNumber(@Param("number") Integer number);
 
-    @GET("epochs/{number}")
-    Call<EpochContent> getEpochByNumber(@Header("project_id")  String projectId, @Path("number") Integer number);
-
-    @GET("epochs/{number}/parameters")
-    Call<ProtocolParams> getProtocolParameters(@Header("project_id")  String projectId, @Path("number") Integer number);
+    @RequestLine("GET epochs/{number}/parameters")
+    ProtocolParams getProtocolParameters(@Param("number") Integer number);
 
 }

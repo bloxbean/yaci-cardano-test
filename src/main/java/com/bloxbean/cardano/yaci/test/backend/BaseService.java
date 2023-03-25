@@ -1,12 +1,8 @@
 package com.bloxbean.cardano.yaci.test.backend;
 
-import com.bloxbean.cardano.client.api.model.Result;
+import feign.Feign;
+import feign.jackson.JacksonDecoder;
 import lombok.extern.slf4j.Slf4j;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.jackson.JacksonConverterFactory;
-
-import java.io.IOException;
 
 @Slf4j
 public class BaseService {
@@ -19,29 +15,16 @@ public class BaseService {
         this.projectId = projectId;
 
         if (log.isDebugEnabled()) {
-            log.debug("Blockfrost URL : " + baseUrl);
+            log.debug("Base URL : " + baseUrl);
         }
     }
 
-    protected Retrofit getRetrofit() {
-        return new Retrofit.Builder()
-                .baseUrl(getBaseUrl())
-                .addConverterFactory(JacksonConverterFactory.create())
-                .build();
+    protected Feign.Builder getFeign() {
+        return Feign.builder()
+                .decoder(new JacksonDecoder());
     }
 
     public String getBaseUrl() {
         return baseUrl;
-    }
-
-    public String getProjectId() {
-        return projectId;
-    }
-
-    protected <T> Result<T> processResponse(Response<T> response) throws IOException {
-        if (response.isSuccessful())
-            return Result.success(response.toString()).withValue(response.body()).code(response.code());
-        else
-            return Result.error(response.errorBody().string()).code(response.code());
     }
 }

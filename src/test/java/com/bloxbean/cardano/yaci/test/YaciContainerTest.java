@@ -194,33 +194,6 @@ public class YaciContainerTest {
         assertThat(testHelper.amounts(receiverAddress)).hasSize(1);
     }
 
-    @Test
-    void transferTest2() throws Exception {
-        String senderAddress = account.baseAddress();
-        log.info("Sender address : " + senderAddress);
-
-        String receiverAddress = new Account(Networks.testnet()).baseAddress();
-        Output output = Output.builder()
-                .address(receiverAddress)
-                .assetName(LOVELACE)
-                .qty(adaToLovelace(2.1))
-                .build();
-
-        TxBuilder txBuilder = output.outputBuilder()
-                .buildInputs(createFromSender(account.baseAddress(), senderAddress))
-                .andThen(balanceTx(senderAddress, 1));
-
-        Transaction signedTransaction = TxBuilderContext.init(utxoSupplier, protocolParamSupplier)
-                .buildAndSign(txBuilder, signerFrom(account));
-
-        Result<String> result = transactionService.submitTransaction(signedTransaction.serialize());
-        waitForTransactionHash(result);
-
-        System.out.println(result);
-        assertThat(testHelper.lovelaceBalance(receiverAddress).get()).isEqualTo(adaToLovelace(2.1));
-        assertThat(testHelper.amounts(receiverAddress)).hasSize(1);
-    }
-
     protected void waitForTransactionHash(Result<String> result) {
         try {
             if (result.isSuccessful()) { //Wait for transaction to be mined

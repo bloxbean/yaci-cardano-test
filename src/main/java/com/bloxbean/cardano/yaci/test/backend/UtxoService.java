@@ -5,19 +5,19 @@ import com.bloxbean.cardano.client.api.exception.ApiException;
 import com.bloxbean.cardano.client.api.model.Result;
 import com.bloxbean.cardano.client.api.model.Utxo;
 import com.bloxbean.cardano.yaci.test.backend.http.AddressesApi;
-import retrofit2.Call;
-import retrofit2.Response;
+import feign.FeignException;
+import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
 import java.util.List;
 
+@Slf4j
 public class UtxoService extends BaseService implements com.bloxbean.cardano.client.backend.api.UtxoService {
 
     private AddressesApi addressApi;
 
     public UtxoService(String baseUrl, String projectId) {
         super(baseUrl, projectId);
-        this.addressApi = getRetrofit().create(AddressesApi.class);
+        this.addressApi = getFeign().target(AddressesApi.class, baseUrl);
     }
 
     @Override
@@ -26,13 +26,13 @@ public class UtxoService extends BaseService implements com.bloxbean.cardano.cli
     }
 
     public Result<List<Utxo>> getUtxos(String address, int count, int page, OrderEnum order) throws ApiException {
-        Call<List<Utxo>> utxosCall = addressApi.getUtxos(getProjectId(), address, count, page, order.toString());
-
         try {
-            Response<List<Utxo>> response = utxosCall.execute();
-            return processResponse(response);
-
-        } catch (IOException e) {
+            List<Utxo> utxos = addressApi.getUtxos(address, count, page, order.toString());
+            return Result.success(String.valueOf(utxos)).withValue(utxos).code(200);
+        } catch (FeignException e) {
+            log.debug("Error getting utxos: ", e);
+            return Result.error(e.contentUTF8()).code(e.status());
+        } catch (Exception e) {
             throw new ApiException("Error getting utxos", e);
         }
     }

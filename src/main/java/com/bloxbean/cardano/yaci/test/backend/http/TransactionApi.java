@@ -1,23 +1,15 @@
 package com.bloxbean.cardano.yaci.test.backend.http;
 
 import com.bloxbean.cardano.client.backend.model.TransactionContent;
-import com.bloxbean.cardano.client.backend.model.TxContentUtxo;
-import okhttp3.RequestBody;
-import retrofit2.Call;
-import retrofit2.http.*;
+import feign.Headers;
+import feign.Param;
+import feign.RequestLine;
 
 public interface TransactionApi {
     @Headers("Content-Type: application/cbor")
-    @POST("tx/submit")
-    Call<String> submit(@Header("project_id") String projectId, @Body RequestBody signedTxn);
+    @RequestLine("POST tx/submit")
+    String submit(byte[] signedTxn);
 
-    @GET("txs/{hash}")
-    Call<TransactionContent> getTransaction(@Header("project_id")  String projectId, @Path("hash") String txnHash);
-
-    @GET("txs/{hash}/utxos")
-    Call<TxContentUtxo> getTransactionUtxos(@Header("project_id")  String projectId, @Path("hash") String txnHash);
-
-    @Headers("Content-Type: application/cbor")
-    @POST("utils/txs/evaluate")
-    Call<Object> evaluateTx(@Header("project_id") String projectId, @Body RequestBody txn);
+    @RequestLine("GET txs/{hash}")
+    TransactionContent getTransaction(@Param("hash") String txnHash);
 }

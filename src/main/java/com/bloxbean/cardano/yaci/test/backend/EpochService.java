@@ -5,64 +5,54 @@ import com.bloxbean.cardano.client.api.model.ProtocolParams;
 import com.bloxbean.cardano.client.api.model.Result;
 import com.bloxbean.cardano.client.backend.model.EpochContent;
 import com.bloxbean.cardano.yaci.test.backend.http.EpochApi;
-import retrofit2.Call;
-import retrofit2.Response;
+import feign.FeignException;
+import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
-
+@Slf4j
 public class EpochService extends BaseService implements com.bloxbean.cardano.client.backend.api.EpochService {
 
     private EpochApi epochApi;
 
     public EpochService(String baseUrl, String projectId) {
         super(baseUrl, projectId);
-        this.epochApi = getRetrofit().create(EpochApi.class);
+        this.epochApi = getFeign().target(EpochApi.class, baseUrl);
     }
 
     @Override
     public Result<EpochContent> getLatestEpoch() throws ApiException {
-        Call<EpochContent> call = epochApi.getLatestEpoch(getProjectId());
-
         try {
-            Response<EpochContent> response = call.execute();
-            if (response.isSuccessful())
-                return Result.success(response.toString()).withValue(response.body()).code(response.code());
-            else
-                return Result.error(response.errorBody().string()).code(response.code());
-
-        } catch (IOException e) {
+            EpochContent epochContent = epochApi.getLatestEpoch();
+            return Result.success(String.valueOf(epochContent)).withValue(epochContent).code(200);
+        } catch (FeignException e) {
+            log.debug("Error getting latest epoch: ", e);
+            return Result.error(e.contentUTF8()).code(e.status());
+        } catch (Exception e) {
             throw new ApiException("Error getting latest epoch", e);
         }
     }
 
     @Override
     public Result<EpochContent> getEpoch(Integer epoch) throws ApiException {
-        Call<EpochContent> call = epochApi.getEpochByNumber(getProjectId(), epoch);
-
         try {
-            Response<EpochContent> response = call.execute();
-            if (response.isSuccessful())
-                return Result.success(response.toString()).withValue(response.body()).code(response.code());
-            else
-                return Result.error(response.errorBody().string()).code(response.code());
-
-        } catch (IOException e) {
-            throw new ApiException("Error getting epoch by number : " + epoch, e);
+            EpochContent epochContent = epochApi.getEpochByNumber(epoch);
+            return Result.success(String.valueOf(epochContent)).withValue(epochContent).code(200);
+        } catch (FeignException e) {
+            log.debug("Error getting epoch: ", e);
+            return Result.error(e.contentUTF8()).code(e.status());
+        } catch (Exception e) {
+            throw new ApiException("Getting epoch", e);
         }
     }
 
     @Override
     public Result<ProtocolParams> getProtocolParameters(Integer epoch) throws ApiException {
-        Call<ProtocolParams> call = epochApi.getProtocolParameters(getProjectId(), epoch);
-
         try {
-            Response<ProtocolParams> response = call.execute();
-            if (response.isSuccessful())
-                return Result.success(response.toString()).withValue(response.body()).code(response.code());
-            else
-                return Result.error(response.errorBody().string()).code(response.code());
-
-        } catch (IOException e) {
+            ProtocolParams protocolParams = epochApi.getProtocolParameters(epoch);
+            return Result.success(String.valueOf(protocolParams)).withValue(protocolParams).code(200);
+        } catch (FeignException e) {
+            log.debug("Error getting protocol parameters by number : " + epoch, e);
+            return Result.error(e.contentUTF8()).code(e.status());
+        } catch (Exception e) {
             throw new ApiException("Error getting protocol parameters by number : " + epoch, e);
         }
     }
