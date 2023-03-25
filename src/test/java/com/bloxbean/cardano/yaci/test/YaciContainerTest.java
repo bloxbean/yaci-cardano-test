@@ -86,6 +86,7 @@ public class YaciContainerTest {
         waitForTransactionHash(result);
 
         assertMe(cardanoContainer).hasLovelaceBalance(receiverAddress, adaToLovelace(2.1));
+        assertMe(cardanoContainer).hasLovelaceBalance(receiverAddress, 2100000);
         assertMe(cardanoContainer).utxos(receiverAddress).hasSize(1);
         assertMe(cardanoContainer).utxos(receiverAddress).hasLovelaceBalance(adaToLovelace(2.1));
     }
@@ -140,6 +141,7 @@ public class YaciContainerTest {
         waitForTransactionHash(result);
 
         assertMe(cardanoContainer).hasAssetBalance(receiverAddress, policy.getPolicyId(), "abc", BigInteger.valueOf(1000));
+        assertMe(cardanoContainer).hasAssetBalance(receiverAddress, policy.getPolicyId(), "abc", 1000);
         assertMe(cardanoContainer).hasAssetBalance(receiverAddress, policy.getPolicyId(), "xyz", BigInteger.valueOf(2000));
         assertMe(cardanoContainer).hasLovelaceBalance(receiverAddress, adaToLovelace(2.1));
         assertMe(cardanoContainer).hasAssetBalance(receiverAddress, policy.getPolicyId(), "aaa", BigInteger.valueOf(0)); //non-exists

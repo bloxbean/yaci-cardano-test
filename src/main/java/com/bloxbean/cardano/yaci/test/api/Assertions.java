@@ -20,6 +20,10 @@ public class Assertions {
     }
 
     public static UtxoListAssert assertMe(List<Utxo> utxos) {
-        return new UtxoListAssert(utxos);
+        return UtxoListAssert.of(utxos);
+    }
+
+    public static UtxoListAssert assertMe(Utxo utxo) {
+        return UtxoListAssert.of(utxo);
     }
 }

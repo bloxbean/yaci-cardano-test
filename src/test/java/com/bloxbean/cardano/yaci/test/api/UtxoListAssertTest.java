@@ -5,6 +5,7 @@ import com.bloxbean.cardano.client.api.model.Utxo;
 import com.bloxbean.cardano.client.config.Configuration;
 import com.bloxbean.cardano.client.plutus.annotation.Constr;
 import com.bloxbean.cardano.client.plutus.annotation.PlutusField;
+import com.bloxbean.cardano.client.transaction.spec.PlutusV2Script;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.jetbrains.annotations.NotNull;
@@ -107,18 +108,28 @@ class UtxoListAssertTest {
     }
 
     @Test
-    void containsReferenceScriptHash() throws Exception {
+    void containsReferenceScript() throws Exception {
         List<Utxo> utxos = testUtxosWithDatumsAndRefScriptHash();
 
-        assertMe(utxos).containsReferenceScriptHash("495ccc869ba300c");
+        PlutusV2Script plutusScript = PlutusV2Script.builder()
+                .type("PlutusScriptV2")
+                .cborHex("49480100002221200101")
+                .build();
+
+        assertMe(utxos).containsReferenceScript(plutusScript);
     }
 
     @Test
     void containsReferenceScriptHash_not_exists() throws Exception {
         List<Utxo> utxos = testUtxosWithDatumsAndRefScriptHash();
 
+        PlutusV2Script plutusScript = PlutusV2Script.builder()
+                .type("PlutusScriptV2")
+                .cborHex("4e4d01000033222220051200120011")
+                .build();
+
         org.junit.jupiter.api.Assertions.assertThrows(AssertionError.class, () -> {
-            assertMe(utxos).containsReferenceScriptHash("555ccc869ba300c");
+            assertMe(utxos).containsReferenceScript(plutusScript);
         });
     }
 
@@ -171,7 +182,7 @@ class UtxoListAssertTest {
                         new Amount("96662071b76a743e44c2267e85f5fa86f9a01a1bea53be5dd812378f57455448", BigInteger.valueOf(100))
                 ))
                 .dataHash(Configuration.INSTANCE.getPlutusObjectConverter().toPlutusData(new Datum1(5, 10)).getDatumHash())
-                .referenceScriptHash("495ccc869ba300c")
+                .referenceScriptHash("820249480100002221200101") //TODO -- this is actually scriptRefBody as current impl. Change it after fix in yaci-store
                 .build();
 
         Utxo utxo3 = Utxo.builder()

@@ -2,9 +2,12 @@ package com.bloxbean.cardano.yaci.test.api;
 
 import com.bloxbean.cardano.client.api.model.Amount;
 import com.bloxbean.cardano.client.api.model.Utxo;
+import com.bloxbean.cardano.client.exception.CborSerializationException;
 import com.bloxbean.cardano.client.plutus.impl.DefaultPlutusObjectConverter;
 import com.bloxbean.cardano.client.transaction.spec.Asset;
+import com.bloxbean.cardano.client.transaction.spec.PlutusScript;
 import com.bloxbean.cardano.client.util.AssetUtil;
+import com.bloxbean.cardano.client.util.HexUtil;
 import lombok.NonNull;
 import org.assertj.core.api.ListAssert;
 import org.jetbrains.annotations.NotNull;
@@ -22,8 +25,16 @@ import static com.bloxbean.cardano.yaci.test.api.helper.YaciTestHelper.amounts;
  * Assertions for list of {@link Utxo}
  */
 public class UtxoListAssert extends ListAssert<Utxo> {
-    public UtxoListAssert(List<Utxo> utxos) {
+    protected UtxoListAssert(List<Utxo> utxos) {
         super(utxos);
+    }
+
+    public static UtxoListAssert of(List<Utxo> utxos) {
+        return new UtxoListAssert(utxos);
+    }
+
+    public static UtxoListAssert of(Utxo utxo) {
+        return new UtxoListAssert(Collections.singletonList(utxo));
     }
 
     /**
@@ -183,20 +194,27 @@ public class UtxoListAssert extends ListAssert<Utxo> {
     }
 
     /**
-     * Verifies if utxo list contains referenceScriptHash
-     *
-     * @param referenceScriptHash reference script hash
+     * Verifies if utxo list contains referenceScript
+     * @param plutusScript PlutusScript to check
      * @return this assertion object
-     * @throws AssertionError - If reference script hash not found
+     * @throws AssertionError - If reference script not found
      */
-    public UtxoListAssert containsReferenceScriptHash(@NonNull String referenceScriptHash) {
+    public UtxoListAssert containsReferenceScript(@NonNull PlutusScript plutusScript) {
         isNotNull();
 
-        boolean found = actual.stream()
-                .anyMatch(utxo -> referenceScriptHash.equals(utxo.getReferenceScriptHash()));
-        if (!found)
-            failWithMessage("Expected but not found.\n ReferenceScriptHash : <%s>", referenceScriptHash);
+        try {
+            String scriptRefHex = HexUtil.encodeHexString(plutusScript.scriptRefBytes());
 
-        return this;
+            boolean found = actual.stream()
+                    .anyMatch(utxo -> scriptRefHex.equals(utxo.getReferenceScriptHash()));
+            //TODO -- The reference script hash in utxo object is actually reference script body. Need to fix this
+
+            if (!found)
+                failWithMessage("Expected but not found.\n ReferenceScript : <%s>", scriptRefHex);
+
+            return this;
+        } catch (CborSerializationException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

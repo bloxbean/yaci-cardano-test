@@ -17,9 +17,22 @@ import java.util.List;
  */
 public class CardanoContainerAssert extends AbstractAssert<CardanoContainerAssert, YaciCardanoContainer> {
     private YaciTestHelper testHelper;
+
     protected CardanoContainerAssert(YaciCardanoContainer yaciCardanoContainer) {
         super(yaciCardanoContainer, CardanoContainerAssert.class);
         testHelper = actual.getTestHelper();
+    }
+
+    /**
+     * Verifies if the address has expected lovelace balance
+     *
+     * @param address address to check
+     * @param expectedBalance balance to verify
+     * @return this assertion object
+     * @throws AssertionError - If expected balance doesn't match with actual balance
+     */
+    public CardanoContainerAssert hasLovelaceBalance(@NonNull String address, @NotNull long expectedBalance) {
+        return hasLovelaceBalance(address, BigInteger.valueOf(expectedBalance));
     }
 
     /**
@@ -38,6 +51,21 @@ public class CardanoContainerAssert extends AbstractAssert<CardanoContainerAsser
             failWithMessage("Expected lovelace balance to be <%s> but was <%s>", expectedBalance, actualBalance);
 
         return this;
+    }
+
+    /**
+     * Verifies if the address has expected balance for the asset with given policy and assetName.
+     *
+     * @param address address to check
+     * @param policy policy id of the asset
+     * @param asssetName asset name of the asset
+     * @param expectedBalance balance to verify
+     * @return this assertion object
+     * @throws AssertionError - If expected balance doesn't match with actual balance
+     */
+    public CardanoContainerAssert hasAssetBalance(@NonNull String address, @NonNull String policy, @NotNull String asssetName,
+                                                  @NotNull long expectedBalance) {
+        return hasAssetBalance(address, policy, asssetName, BigInteger.valueOf(expectedBalance));
     }
 
     /**
