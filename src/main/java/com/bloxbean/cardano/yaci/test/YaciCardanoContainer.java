@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class YaciCardanoContainer extends GenericContainer<YaciCardanoContainer> {
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("bloxbean/yaci-cli");
-    private static final String DEFAULT_TAG = "0.0.11";
+    private static final String DEFAULT_TAG = "0.0.12";
     public static final int STORE_PORT = 8080;
     public static final int CLUSTER_HTTP_PORT = 10000;
     public static final int SUBMIT_API_PORT = 8090;
@@ -143,5 +143,10 @@ public class YaciCardanoContainer extends GenericContainer<YaciCardanoContainer>
         if (testHelper == null)
             testHelper = new YaciTestHelper(this);
         return testHelper;
+    }
+
+    @Override
+    public void stop() {
+        super.stop();
     }
 }

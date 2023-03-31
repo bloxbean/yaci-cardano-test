@@ -83,7 +83,7 @@ public class YaciContainerTest {
                 .buildAndSign(txBuilder, signerFrom(account));
 
         Result<String> result = transactionService.submitTransaction(signedTransaction.serialize());
-        waitForTransactionHash(result);
+        testHelper.waitForTransactionHash(result);
 
         assertMe(cardanoContainer).hasLovelaceBalance(receiverAddress, adaToLovelace(2.1));
         assertMe(cardanoContainer).hasLovelaceBalance(receiverAddress, 2100000);
@@ -138,7 +138,7 @@ public class YaciContainerTest {
                         .andThen(signerFrom(policy.getPolicyKeys().get(0))));
 
         Result<String> result = transactionService.submitTransaction(signedTransaction.serialize());
-        waitForTransactionHash(result);
+        testHelper.waitForTransactionHash(result);
 
         assertMe(cardanoContainer).hasAssetBalance(receiverAddress, policy.getPolicyId(), "abc", BigInteger.valueOf(1000));
         assertMe(cardanoContainer).hasAssetBalance(receiverAddress, policy.getPolicyId(), "abc", 1000);
@@ -187,35 +187,12 @@ public class YaciContainerTest {
                 .buildAndSign(txBuilder, signerFrom(account));
 
         Result<String> result = transactionService.submitTransaction(signedTransaction.serialize());
-        waitForTransactionHash(result);
+        testHelper.waitForTransactionHash(result);
 
         System.out.println(result);
         assertThat(testHelper.lovelaceBalance(receiverAddress).get()).isEqualTo(adaToLovelace(2.1));
         assertThat(testHelper.amounts(receiverAddress)).hasSize(1);
     }
-
-    protected void waitForTransactionHash(Result<String> result) {
-        try {
-            if (result.isSuccessful()) { //Wait for transaction to be mined
-                int count = 0;
-                while (count < 180) {
-                    Result<TransactionContent> txnResult = cardanoContainer.getTransactionService().getTransaction(result.getValue());
-                    if (txnResult.isSuccessful()) {
-                        System.out.println(JsonUtil.getPrettyJson(txnResult.getValue()));
-                        break;
-                    } else {
-                        System.out.println("Waiting for transaction to be processed ....");
-                    }
-
-                    count++;
-                    Thread.sleep(2000);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
 
     @AfterAll
     static void tearDown() {
