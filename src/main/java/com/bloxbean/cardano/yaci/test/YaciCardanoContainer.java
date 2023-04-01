@@ -36,8 +36,9 @@ public class YaciCardanoContainer extends GenericContainer<YaciCardanoContainer>
     public static final int NODE_PORT = 3001;
     private static float DEFAULT_SLOT_LENGTH = 1f;
     private static float DEFAULT_BLOCK_TIME = 1f;
+    private static long DEFAULT_WAIT_TIMEOUT = 120;
 
-    private static long waitTimeout = 100;
+    private static long waitTimeout;
 
     private YaciTestHelper testHelper;
 
@@ -46,11 +47,16 @@ public class YaciCardanoContainer extends GenericContainer<YaciCardanoContainer>
     }
 
     public YaciCardanoContainer(final DockerImageName dockerImageName) {
-        this(dockerImageName, DEFAULT_BLOCK_TIME);
+        this(dockerImageName, DEFAULT_BLOCK_TIME, DEFAULT_WAIT_TIMEOUT);
     }
 
     public YaciCardanoContainer(final DockerImageName dockerImageName, float blockTime) {
+        this(dockerImageName, blockTime, DEFAULT_WAIT_TIMEOUT);
+    }
+
+    public YaciCardanoContainer(final DockerImageName dockerImageName, float blockTime, long waitTimeout) {
         super(dockerImageName);
+        this.waitTimeout = waitTimeout;
 
         if (blockTime >= 1 && blockTime <= 20) {
             dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
