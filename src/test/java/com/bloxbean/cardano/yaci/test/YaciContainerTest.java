@@ -17,10 +17,7 @@ import com.bloxbean.cardano.client.util.PolicyUtil;
 import com.bloxbean.cardano.yaci.test.api.helper.YaciTestHelper;
 import com.bloxbean.cardano.yaci.test.backend.TransactionService;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.testcontainers.junit.jupiter.Container;
 
 import java.math.BigInteger;
@@ -47,8 +44,8 @@ public class YaciContainerTest {
     private static YaciCardanoContainer cardanoContainer = new YaciCardanoContainer();
     private static YaciTestHelper testHelper = cardanoContainer.getTestHelper();
 
-    @BeforeEach
-    void setup() {
+    @BeforeAll
+    static void setup() {
         if (!cardanoContainer.isRunning()) {
             cardanoContainer
                     .withInitialFunding(new Funding(account.baseAddress(), 20000))
@@ -61,7 +58,7 @@ public class YaciContainerTest {
         }
     }
 
-    //@Test
+    @Test
     void transfer_lovelace() throws Exception {
         String senderAddress = account.baseAddress();
         log.info("Sender address : " + senderAddress);
@@ -89,7 +86,7 @@ public class YaciContainerTest {
         assertMe(cardanoContainer).utxos(receiverAddress).hasLovelaceBalance(adaToLovelace(2.1));
     }
 
-    //@Test
+    @Test
     void mint_transfer_assets() throws Exception {
         String senderAddress = account.baseAddress();
         log.info("Sender address : " + senderAddress);
@@ -165,7 +162,7 @@ public class YaciContainerTest {
 
     }
 
-    //@Test
+    @Test
     void transferTest() throws Exception {
         String senderAddress = account.baseAddress();
         log.info("Sender address : " + senderAddress);

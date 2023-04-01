@@ -11,7 +11,7 @@ import com.bloxbean.cardano.yaci.test.Funding;
 import com.bloxbean.cardano.yaci.test.YaciCardanoContainer;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.junit.jupiter.Container;
 
@@ -33,8 +33,8 @@ class TransactionHelperTest {
     private static YaciCardanoContainer cardanoContainer = new YaciCardanoContainer();
     private static YaciTestHelper testHelper = cardanoContainer.getTestHelper();
 
-    @BeforeEach
-    void setup() {
+    @BeforeAll
+    static void setup() {
         if (!cardanoContainer.isRunning()) {
             cardanoContainer
                     .withInitialFunding(new Funding(account.baseAddress(), 20000))
