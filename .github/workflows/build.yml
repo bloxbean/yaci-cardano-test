@@ -34,7 +34,4 @@ jobs:
         env:
           DOCKER_HOST: tcp://localhost:2375
         run: |
-          sudo apt-get -y update
-          sudo apt-get -y install docker.io
-          sudo systemctl start docker
           ./gradlew build -PskipSigning=true --stacktrace
