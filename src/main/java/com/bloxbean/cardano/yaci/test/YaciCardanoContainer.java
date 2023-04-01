@@ -14,6 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
+import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
@@ -56,9 +58,10 @@ public class YaciCardanoContainer extends GenericContainer<YaciCardanoContainer>
             withCommand("create-cluster", "-o", "--slotLength", String.valueOf(DEFAULT_SLOT_LENGTH), "--blockTime", String.valueOf(blockTime), "--start");
             addEnv("yaci_store_enabled", "true");
 
-            waitingFor(Wait.forHttp("/api/v1/epochs/1/parameters")
+            waitingFor(Wait.forHttp("/api/v1/epochs/parameters")
                     .forPort(STORE_PORT)
                     .forStatusCode(200)
+                    .forResponsePredicate(resp -> resp.contains("cost_models") && resp.contains("pool_deposit"))
                     .withStartupTimeout(Duration.ofSeconds(waitTimeout)));
             withStartupTimeout(Duration.ofSeconds(waitTimeout));
         } else {
@@ -74,13 +77,20 @@ public class YaciCardanoContainer extends GenericContainer<YaciCardanoContainer>
                 .map(funding -> funding.getAddress() + ":" + funding.getAdaValue())
                 .collect(Collectors.joining(","));
 
-        //Override default wait strategy if initial funding
-        waitingFor(Wait.forHttp("/api/v1/addresses/" + fundings[0].getAddress() + "/utxos")
-                .forPort(STORE_PORT)
-                .forResponsePredicate(s -> s.contains(fundings[0].getAddress()))
-                .forStatusCode(200)
-                .withStartupTimeout(Duration.ofSeconds(waitTimeout)));
+        WaitStrategy waitStrategy = new WaitAllStrategy()
+                .withStrategy(Wait.forHttp("/api/v1/epochs/parameters")
+                        .forPort(STORE_PORT)
+                        .forStatusCode(200)
+                        .forResponsePredicate(resp -> resp.contains("cost_models") && resp.contains("pool_deposit"))
+                        .withStartupTimeout(Duration.ofSeconds(waitTimeout)))
+                .withStrategy(Wait.forHttp("/api/v1/addresses/" + fundings[0].getAddress() + "/utxos")
+                                .forPort(STORE_PORT)
+                                .forResponsePredicate(s -> s.contains(fundings[0].getAddress()))
+                                .forStatusCode(200)
+                                .withStartupTimeout(Duration.ofSeconds(waitTimeout)));
 
+        //Override default wait strategy if initial funding
+        waitingFor(waitStrategy);
         addEnv("topup_addresses", topupAddresses);
 
         return this;

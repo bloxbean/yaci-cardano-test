@@ -4,7 +4,6 @@ import com.bloxbean.cardano.client.account.Account;
 import com.bloxbean.cardano.client.api.ProtocolParamsSupplier;
 import com.bloxbean.cardano.client.api.UtxoSupplier;
 import com.bloxbean.cardano.client.api.model.Result;
-import com.bloxbean.cardano.client.backend.model.TransactionContent;
 import com.bloxbean.cardano.client.common.model.Networks;
 import com.bloxbean.cardano.client.function.Output;
 import com.bloxbean.cardano.client.function.TxBuilder;
@@ -14,7 +13,6 @@ import com.bloxbean.cardano.client.transaction.spec.Asset;
 import com.bloxbean.cardano.client.transaction.spec.MultiAsset;
 import com.bloxbean.cardano.client.transaction.spec.Policy;
 import com.bloxbean.cardano.client.transaction.spec.Transaction;
-import com.bloxbean.cardano.client.util.JsonUtil;
 import com.bloxbean.cardano.client.util.PolicyUtil;
 import com.bloxbean.cardano.yaci.test.api.helper.YaciTestHelper;
 import com.bloxbean.cardano.yaci.test.backend.TransactionService;
@@ -96,7 +94,7 @@ public class YaciContainerTest {
         String senderAddress = account.baseAddress();
         log.info("Sender address : " + senderAddress);
 
-        String receiverAddress = "addr_test1qqwpl7h3g84mhr36wpetk904p7fchx2vst0z696lxk8ujsjyruqwmlsm344gfux3nsj6njyzj3ppvrqtt36cp9xyydzqzumz82";
+        String receiverAddress = new Account(Networks.testnet()).baseAddress();
         Policy policy = PolicyUtil.createMultiSigScriptAllPolicy("policy", 1);
         MultiAsset multiAsset = MultiAsset
                 .builder()
