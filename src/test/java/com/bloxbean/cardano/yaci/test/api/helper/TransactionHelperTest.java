@@ -11,9 +11,8 @@ import com.bloxbean.cardano.yaci.test.Funding;
 import com.bloxbean.cardano.yaci.test.YaciCardanoContainer;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.junit.jupiter.Container;
 
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -29,12 +28,11 @@ class TransactionHelperTest {
     private static String senderMnemonic = "flush together outer effort tenant photo waste distance rib grocery aunt broken weather arrow jungle debris finger flee casino doctor group echo baby near";
     private static Account account = new Account(Networks.testnet(), senderMnemonic);
 
-    @Container
     private static YaciCardanoContainer cardanoContainer = new YaciCardanoContainer();
     private static YaciTestHelper testHelper = cardanoContainer.getTestHelper();
 
-    @BeforeEach
-    void setup() {
+    @BeforeAll
+    static void setup() {
         if (!cardanoContainer.isRunning()) {
             cardanoContainer
                     .withInitialFunding(new Funding(account.baseAddress(), 20000))

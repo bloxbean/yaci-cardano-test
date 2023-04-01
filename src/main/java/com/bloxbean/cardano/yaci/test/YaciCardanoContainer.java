@@ -14,6 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
+import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
@@ -32,9 +34,11 @@ public class YaciCardanoContainer extends GenericContainer<YaciCardanoContainer>
     public static final int CLUSTER_HTTP_PORT = 10000;
     public static final int SUBMIT_API_PORT = 8090;
     public static final int NODE_PORT = 3001;
-    private static float DEFAULT_SLOT_LENGTH = 0.15f;
+    private static float DEFAULT_SLOT_LENGTH = 1f;
+    private static float DEFAULT_BLOCK_TIME = 1f;
+    private static long DEFAULT_WAIT_TIMEOUT = 120;
 
-    private static long waitTimeout = 60;
+    private static long waitTimeout;
 
     private YaciTestHelper testHelper;
 
@@ -43,24 +47,31 @@ public class YaciCardanoContainer extends GenericContainer<YaciCardanoContainer>
     }
 
     public YaciCardanoContainer(final DockerImageName dockerImageName) {
-        this(dockerImageName, DEFAULT_SLOT_LENGTH);
+        this(dockerImageName, DEFAULT_BLOCK_TIME, DEFAULT_WAIT_TIMEOUT);
     }
 
-    public YaciCardanoContainer(final DockerImageName dockerImageName, float slotLength) {
+    public YaciCardanoContainer(final DockerImageName dockerImageName, float blockTime) {
+        this(dockerImageName, blockTime, DEFAULT_WAIT_TIMEOUT);
+    }
+
+    public YaciCardanoContainer(final DockerImageName dockerImageName, float blockTime, long waitTimeout) {
         super(dockerImageName);
-        if (slotLength >= 0.1 && slotLength <= 1) {
+        this.waitTimeout = waitTimeout;
+
+        if (blockTime >= 1 && blockTime <= 20) {
             dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
             withExposedPorts(STORE_PORT, CLUSTER_HTTP_PORT, SUBMIT_API_PORT, NODE_PORT);
-            withCommand("create-cluster", "-o", "--slotLength", String.valueOf(slotLength), ", start");
+            withCommand("create-cluster", "-o", "--slotLength", String.valueOf(DEFAULT_SLOT_LENGTH), "--blockTime", String.valueOf(blockTime), "--start");
             addEnv("yaci_store_enabled", "true");
 
-            waitingFor(Wait.forHttp("/api/v1/epochs/1/parameters")
+            waitingFor(Wait.forHttp("/api/v1/epochs/parameters")
                     .forPort(STORE_PORT)
                     .forStatusCode(200)
+                    .forResponsePredicate(resp -> resp.contains("cost_models") && resp.contains("pool_deposit"))
                     .withStartupTimeout(Duration.ofSeconds(waitTimeout)));
             withStartupTimeout(Duration.ofSeconds(waitTimeout));
         } else {
-            throw new IllegalArgumentException("Invalid slotLength. Value should be between 0.1 to 1");
+            throw new IllegalArgumentException("Invalid blockTime. Value should be between 1 to 20");
         }
     }
 
@@ -72,13 +83,20 @@ public class YaciCardanoContainer extends GenericContainer<YaciCardanoContainer>
                 .map(funding -> funding.getAddress() + ":" + funding.getAdaValue())
                 .collect(Collectors.joining(","));
 
-        //Override default wait strategy if initial funding
-        waitingFor(Wait.forHttp("/api/v1/addresses/" + fundings[0].getAddress() + "/utxos")
-                .forPort(STORE_PORT)
-                .forResponsePredicate(s -> s.contains(fundings[0].getAddress()))
-                .forStatusCode(200)
-                .withStartupTimeout(Duration.ofSeconds(waitTimeout)));
+        WaitStrategy waitStrategy = new WaitAllStrategy()
+                .withStrategy(Wait.forHttp("/api/v1/epochs/parameters")
+                        .forPort(STORE_PORT)
+                        .forStatusCode(200)
+                        .forResponsePredicate(resp -> resp.contains("cost_models") && resp.contains("pool_deposit"))
+                        .withStartupTimeout(Duration.ofSeconds(waitTimeout)))
+                .withStrategy(Wait.forHttp("/api/v1/addresses/" + fundings[0].getAddress() + "/utxos")
+                                .forPort(STORE_PORT)
+                                .forResponsePredicate(s -> s.contains(fundings[0].getAddress()))
+                                .forStatusCode(200)
+                                .withStartupTimeout(Duration.ofSeconds(waitTimeout)));
 
+        //Override default wait strategy if initial funding
+        waitingFor(waitStrategy);
         addEnv("topup_addresses", topupAddresses);
 
         return this;

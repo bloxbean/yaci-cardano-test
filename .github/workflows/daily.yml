@@ -12,6 +12,10 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: 'true'
+      - name: Setup Testcontainers Cloud Client
+        uses: atomicjar/testcontainers-cloud-setup-action@v1
+        with:
+          token: ${{ secrets.TC_CLOUD_TOKEN }}
       - name: Set up JDK 11
         uses: actions/setup-java@v2
         with:
