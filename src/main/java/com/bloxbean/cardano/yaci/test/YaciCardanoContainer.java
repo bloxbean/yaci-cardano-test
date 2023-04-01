@@ -37,7 +37,7 @@ public class YaciCardanoContainer extends GenericContainer<YaciCardanoContainer>
     private static float DEFAULT_SLOT_LENGTH = 1f;
     private static float DEFAULT_BLOCK_TIME = 1f;
 
-    private static long waitTimeout = 60;
+    private static long waitTimeout = 100;
 
     private YaciTestHelper testHelper;
 
