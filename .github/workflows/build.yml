@@ -35,4 +35,7 @@ jobs:
           DOCKER_HOST: tcp://localhost:2375
         run: |
           sudo systemctl start docker
-          ./gradlew build -PskipSigning=true --stacktrace
+          ./gradlew clean build -PskipSigning=true -Dtestcontainers.startup.attempts=3 -Dtestcontainers.shutdown.timeout=120000
+      - name: Print test logs
+        run: cat build/test-results/test/*.xml
+
