@@ -13,7 +13,7 @@ in your test code through a Test Helper class and use Cardano specific assertion
 
 ## How to use
 
-Check this sample app https://github.com/bloxbean/yaci-cardano-test-sample 
+Check this sample project https://github.com/bloxbean/yaci-cardano-test-sample 
 
 For more tests check the [test](https://github.com/bloxbean/yaci-cardano-test/tree/main/src/test/java/com/bloxbean/cardano/yaci/test) pacakage in this project.
 
