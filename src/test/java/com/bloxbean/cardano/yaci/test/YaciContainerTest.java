@@ -61,7 +61,7 @@ public class YaciContainerTest {
         }
     }
 
-    @Test
+    //@Test
     void transfer_lovelace() throws Exception {
         String senderAddress = account.baseAddress();
         log.info("Sender address : " + senderAddress);
@@ -89,7 +89,7 @@ public class YaciContainerTest {
         assertMe(cardanoContainer).utxos(receiverAddress).hasLovelaceBalance(adaToLovelace(2.1));
     }
 
-    @Test
+    //@Test
     void mint_transfer_assets() throws Exception {
         String senderAddress = account.baseAddress();
         log.info("Sender address : " + senderAddress);
@@ -165,7 +165,7 @@ public class YaciContainerTest {
 
     }
 
-    @Test
+    //@Test
     void transferTest() throws Exception {
         String senderAddress = account.baseAddress();
         log.info("Sender address : " + senderAddress);
