@@ -14,6 +14,10 @@ jobs:
         with:
           java-version: '11'
           distribution: 'temurin'
+      - name: Setup Testcontainers Cloud Client
+        uses: atomicjar/testcontainers-cloud-setup-action@v1
+        with:
+          token: ${{ secrets.TC_CLOUD_TOKEN }}
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Build with Gradle
