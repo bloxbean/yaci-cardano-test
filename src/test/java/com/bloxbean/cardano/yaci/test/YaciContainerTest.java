@@ -41,11 +41,11 @@ public class YaciContainerTest {
     private static TransactionService transactionService;
 
     @Container
-    private static YaciCardanoContainer cardanoContainer = new YaciCardanoContainer();
-    private static YaciTestHelper testHelper = cardanoContainer.getTestHelper();
+    private YaciCardanoContainer cardanoContainer = new YaciCardanoContainer();
+    private YaciTestHelper testHelper = cardanoContainer.getTestHelper();
 
-    @BeforeAll
-    static void setup() {
+    @BeforeEach
+    void setup() {
         if (!cardanoContainer.isRunning()) {
             cardanoContainer
                     .withInitialFunding(new Funding(account.baseAddress(), 20000))
@@ -189,8 +189,8 @@ public class YaciContainerTest {
         assertThat(testHelper.amounts(receiverAddress)).hasSize(1);
     }
 
-    @AfterAll
-    static void tearDown() {
+    @AfterEach
+    void tearDown() {
         cardanoContainer.stop();
     }
 }

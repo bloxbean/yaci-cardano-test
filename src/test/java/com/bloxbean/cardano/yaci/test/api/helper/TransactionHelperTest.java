@@ -10,9 +10,7 @@ import com.bloxbean.cardano.client.util.AssetUtil;
 import com.bloxbean.cardano.yaci.test.Funding;
 import com.bloxbean.cardano.yaci.test.YaciCardanoContainer;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.testcontainers.junit.jupiter.Container;
 
 import java.math.BigInteger;
@@ -30,11 +28,11 @@ class TransactionHelperTest {
     private static Account account = new Account(Networks.testnet(), senderMnemonic);
 
     @Container
-    private static YaciCardanoContainer cardanoContainer = new YaciCardanoContainer();
-    private static YaciTestHelper testHelper = cardanoContainer.getTestHelper();
+    private YaciCardanoContainer cardanoContainer = new YaciCardanoContainer();
+    private YaciTestHelper testHelper = cardanoContainer.getTestHelper();
 
-    @BeforeAll
-    static void setup() {
+    @BeforeEach
+    void setup() {
         if (!cardanoContainer.isRunning()) {
             cardanoContainer
                     .withInitialFunding(new Funding(account.baseAddress(), 20000))
@@ -176,8 +174,8 @@ class TransactionHelperTest {
         assertMe(utxo.get()).containsReferenceScript(plutusScript);
     }
 
-    @AfterAll
-    static void tearDown() {
+    @AfterEach
+    void tearDown() {
         cardanoContainer.stop();
     }
 }
