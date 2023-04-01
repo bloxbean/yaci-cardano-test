@@ -32,7 +32,8 @@ public class YaciCardanoContainer extends GenericContainer<YaciCardanoContainer>
     public static final int CLUSTER_HTTP_PORT = 10000;
     public static final int SUBMIT_API_PORT = 8090;
     public static final int NODE_PORT = 3001;
-    private static float DEFAULT_SLOT_LENGTH = 0.15f;
+    private static float DEFAULT_SLOT_LENGTH = 1f;
+    private static float DEFAULT_BLOCK_TIME = 1f;
 
     private static long waitTimeout = 60;
 
@@ -43,15 +44,16 @@ public class YaciCardanoContainer extends GenericContainer<YaciCardanoContainer>
     }
 
     public YaciCardanoContainer(final DockerImageName dockerImageName) {
-        this(dockerImageName, DEFAULT_SLOT_LENGTH);
+        this(dockerImageName, DEFAULT_BLOCK_TIME);
     }
 
-    public YaciCardanoContainer(final DockerImageName dockerImageName, float slotLength) {
+    public YaciCardanoContainer(final DockerImageName dockerImageName, float blockTime) {
         super(dockerImageName);
-        if (slotLength >= 0.1 && slotLength <= 1) {
+
+        if (blockTime >= 1 && blockTime <= 20) {
             dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
             withExposedPorts(STORE_PORT, CLUSTER_HTTP_PORT, SUBMIT_API_PORT, NODE_PORT);
-            withCommand("create-cluster", "-o", "--slotLength", String.valueOf(slotLength), ", start");
+            withCommand("create-cluster", "-o", "--slotLength", String.valueOf(DEFAULT_SLOT_LENGTH), "--blockTime", String.valueOf(blockTime), "--start");
             addEnv("yaci_store_enabled", "true");
 
             waitingFor(Wait.forHttp("/api/v1/epochs/1/parameters")
@@ -60,7 +62,7 @@ public class YaciCardanoContainer extends GenericContainer<YaciCardanoContainer>
                     .withStartupTimeout(Duration.ofSeconds(waitTimeout)));
             withStartupTimeout(Duration.ofSeconds(waitTimeout));
         } else {
-            throw new IllegalArgumentException("Invalid slotLength. Value should be between 0.1 to 1");
+            throw new IllegalArgumentException("Invalid blockTime. Value should be between 1 to 20");
         }
     }
 
