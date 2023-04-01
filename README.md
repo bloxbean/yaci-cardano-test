@@ -9,13 +9,50 @@ in your test code through a Test Helper class and use Cardano specific assertion
 
 ## Dependencies
 
-Maven dependency:
+### Maven dependencies
 
 ```xml
   <dependency>
      <groupId>com.bloxbean.cardano</groupId>
      <artifactId>yaci-cardano-test</artifactId>
-     <version>{version}</version>
+     <version>0.0.1</version>
      <scope>test</scope>
   </dependency>
+```
+You also need to add following cardano-client-lib dependencies and also junit 5.
+
+```
+<dependency>
+     <groupId>com.bloxbean.cardano</groupId>
+     <artifactId>cardano-client-lib</artifactId>
+     <version>0.4.3</version>
+</dependency>
+<dependency>
+     <groupId>com.bloxbean.cardano</groupId>
+     <artifactId>cardano-client-backend</artifactId>
+     <version>0.4.3</version>
+</dependency>
+ <dependency>
+     <groupId>org.junit.jupiter</groupId>
+     <artifactId>junit-jupiter-engine</artifactId>
+     <version>5.9.2</version>
+     <scope>test</scope>
+</dependency>
+
+```
+
+### Gradle Dependencies
+
+```
+testImplementation "com.bloxbean.cardano:yaci-cardano-test:0.0.1"
+```
+
+Other dependencies
+
+```
+implementation "com.bloxbean.cardano:cardano-client-lib:0.4.3"
+implementation "com.bloxbean.cardano:cardano-client-backend:0.4.3"
+
+testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.2'
+testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.2'
 ```
