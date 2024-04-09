@@ -203,11 +203,10 @@ public class UtxoListAssert extends ListAssert<Utxo> {
         isNotNull();
 
         try {
-            String scriptRefHex = HexUtil.encodeHexString(plutusScript.scriptRefBytes());
+            String scriptRefHex = HexUtil.encodeHexString(plutusScript.getScriptHash());
 
             boolean found = actual.stream()
                     .anyMatch(utxo -> scriptRefHex.equals(utxo.getReferenceScriptHash()));
-            //TODO -- The reference script hash in utxo object is actually reference script body. Need to fix this
 
             if (!found)
                 failWithMessage("Expected but not found.\n ReferenceScript : <%s>", scriptRefHex);
