@@ -5,7 +5,7 @@ import com.bloxbean.cardano.client.api.model.Utxo;
 import com.bloxbean.cardano.client.config.Configuration;
 import com.bloxbean.cardano.client.plutus.annotation.Constr;
 import com.bloxbean.cardano.client.plutus.annotation.PlutusField;
-import com.bloxbean.cardano.client.transaction.spec.PlutusV2Script;
+import com.bloxbean.cardano.client.plutus.spec.PlutusV2Script;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.jetbrains.annotations.NotNull;

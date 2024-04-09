@@ -6,22 +6,28 @@ import com.bloxbean.cardano.client.address.AddressProvider;
 import com.bloxbean.cardano.client.api.model.Amount;
 import com.bloxbean.cardano.client.api.model.Result;
 import com.bloxbean.cardano.client.api.model.Utxo;
+import com.bloxbean.cardano.client.api.util.AssetUtil;
+import com.bloxbean.cardano.client.api.util.PolicyUtil;
 import com.bloxbean.cardano.client.backend.model.TransactionContent;
 import com.bloxbean.cardano.client.common.model.Networks;
 import com.bloxbean.cardano.client.crypto.KeyGenUtil;
 import com.bloxbean.cardano.client.crypto.SecretKey;
 import com.bloxbean.cardano.client.crypto.VerificationKey;
 import com.bloxbean.cardano.client.crypto.bip32.key.HdPublicKey;
-import com.bloxbean.cardano.client.exception.CborSerializationException;
 import com.bloxbean.cardano.client.function.Output;
 import com.bloxbean.cardano.client.function.TxBuilder;
 import com.bloxbean.cardano.client.function.TxBuilderContext;
 import com.bloxbean.cardano.client.function.helper.MintCreators;
 import com.bloxbean.cardano.client.function.helper.OutputBuilders;
-import com.bloxbean.cardano.client.transaction.spec.*;
-import com.bloxbean.cardano.client.util.AssetUtil;
+import com.bloxbean.cardano.client.plutus.spec.PlutusData;
+import com.bloxbean.cardano.client.plutus.spec.PlutusScript;
+import com.bloxbean.cardano.client.transaction.spec.Asset;
+import com.bloxbean.cardano.client.transaction.spec.MultiAsset;
+import com.bloxbean.cardano.client.transaction.spec.Policy;
+import com.bloxbean.cardano.client.transaction.spec.Transaction;
+import com.bloxbean.cardano.client.transaction.spec.TransactionOutput;
+import com.bloxbean.cardano.client.transaction.spec.Value;
 import com.bloxbean.cardano.client.util.JsonUtil;
-import com.bloxbean.cardano.client.util.PolicyUtil;
 import com.bloxbean.cardano.yaci.test.YaciCardanoContainer;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -165,12 +171,8 @@ class TransactionHelper {
      */
     public Optional<String> lockFund(@NonNull Account senderAccount, @NonNull PlutusScript receiverScript,
                                      @NonNull Value value, PlutusData inlineDatum) {
-        try {
-            String scriptAddress = AddressProvider.getEntAddress(receiverScript, Networks.testnet()).toBech32();
-            return lockFund(senderAccount, scriptAddress, value, inlineDatum);
-        } catch (CborSerializationException e) {
-            throw new RuntimeException(e);
-        }
+        String scriptAddress = AddressProvider.getEntAddress(receiverScript, Networks.testnet()).toBech32();
+        return lockFund(senderAccount, scriptAddress, value, inlineDatum);
     }
 
     /**
@@ -183,12 +185,8 @@ class TransactionHelper {
      */
     public Optional<String> lockFund(@NonNull Account senderAccount, @NonNull PlutusScript receiverScript,
                                      @NonNull List<Amount> amounts, PlutusData inlineDatum) {
-        try {
-            String scriptAddress = AddressProvider.getEntAddress(receiverScript, Networks.testnet()).toBech32();
-            return lockFund(senderAccount, scriptAddress, amounts, inlineDatum);
-        } catch (CborSerializationException e) {
-            throw new RuntimeException(e);
-        }
+        String scriptAddress = AddressProvider.getEntAddress(receiverScript, Networks.testnet()).toBech32();
+        return lockFund(senderAccount, scriptAddress, amounts, inlineDatum);
     }
 
     /**
@@ -242,12 +240,8 @@ class TransactionHelper {
      */
     public Optional<String> lockFund(@NonNull PlutusScript receiverScript,
                                      @NonNull Value value, PlutusData inlineDatum) {
-        try {
-            String scriptAddress = AddressProvider.getEntAddress(receiverScript, Networks.testnet()).toBech32();
-            return lockFund(scriptAddress, value, inlineDatum);
-        } catch (CborSerializationException e) {
-            throw new RuntimeException(e);
-        }
+        String scriptAddress = AddressProvider.getEntAddress(receiverScript, Networks.testnet()).toBech32();
+        return lockFund(scriptAddress, value, inlineDatum);
     }
 
     /**
@@ -259,12 +253,8 @@ class TransactionHelper {
      */
     public Optional<String> lockFund(@NonNull PlutusScript receiverScript,
                                      @NonNull List<Amount> amounts, PlutusData inlineDatum) {
-        try {
-            String scriptAddress = AddressProvider.getEntAddress(receiverScript, Networks.testnet()).toBech32();
-            return lockFund(scriptAddress, amounts, inlineDatum);
-        } catch (CborSerializationException e) {
-            throw new RuntimeException(e);
-        }
+        String scriptAddress = AddressProvider.getEntAddress(receiverScript, Networks.testnet()).toBech32();
+        return lockFund(scriptAddress, amounts, inlineDatum);
     }
 
 

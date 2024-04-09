@@ -2,8 +2,9 @@ package com.bloxbean.cardano.yaci.test.backend;
 
 import com.bloxbean.cardano.client.api.exception.ApiException;
 import com.bloxbean.cardano.client.api.model.Result;
-import com.bloxbean.cardano.client.backend.model.EvaluationResult;
+import com.bloxbean.cardano.client.api.model.Utxo;
 import com.bloxbean.cardano.client.backend.model.TransactionContent;
+import com.bloxbean.cardano.client.backend.model.TxContentRedeemers;
 import com.bloxbean.cardano.client.backend.model.TxContentUtxo;
 import com.bloxbean.cardano.yaci.test.backend.http.TransactionApi;
 import feign.FeignException;
@@ -47,13 +48,23 @@ public class TransactionService extends BaseService implements com.bloxbean.card
     }
 
     @Override
+    public Result<List<TransactionContent>> getTransactions(List<String> list) throws ApiException {
+        return null;
+    }
+
+    @Override
     public Result<TxContentUtxo> getTransactionUtxos(String txnHash) {
         throw new UnsupportedOperationException("Not supported");
     }
 
     @Override
-    public Result<List<EvaluationResult>> evaluateTx(byte[] cborData) {
-        throw new UnsupportedOperationException("Not supported");
+    public Result<List<TxContentRedeemers>> getTransactionRedeemers(String s) throws ApiException {
+        return null;
+    }
+
+    @Override
+    public Result<Utxo> getTransactionOutput(String txnHash, int outputIndex) throws ApiException {
+        return com.bloxbean.cardano.client.backend.api.TransactionService.super.getTransactionOutput(txnHash, outputIndex);
     }
 
 }

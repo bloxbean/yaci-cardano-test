@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class YaciCardanoContainer extends GenericContainer<YaciCardanoContainer> {
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("bloxbean/yaci-cli");
-    private static final String DEFAULT_TAG = "0.0.12";
+    private static final String DEFAULT_TAG = "0.0.19";
     public static final int STORE_PORT = 8080;
     public static final int CLUSTER_HTTP_PORT = 10000;
     public static final int SUBMIT_API_PORT = 8090;
@@ -61,7 +61,7 @@ public class YaciCardanoContainer extends GenericContainer<YaciCardanoContainer>
         if (blockTime >= 1 && blockTime <= 20) {
             dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
             withExposedPorts(STORE_PORT, CLUSTER_HTTP_PORT, SUBMIT_API_PORT, NODE_PORT);
-            withCommand("create-cluster", "-o", "--slotLength", String.valueOf(DEFAULT_SLOT_LENGTH), "--blockTime", String.valueOf(blockTime), "--start");
+            withCommand("create-cluster", "-o", "--slot-length", String.valueOf(DEFAULT_SLOT_LENGTH), "--block-time", String.valueOf(blockTime), "--start");
             addEnv("yaci_store_enabled", "true");
 
             waitingFor(Wait.forHttp("/api/v1/epochs/parameters")

@@ -36,4 +36,19 @@ public class UtxoService extends BaseService implements com.bloxbean.cardano.cli
             throw new ApiException("Error getting utxos", e);
         }
     }
+
+    @Override
+    public Result<List<Utxo>> getUtxos(String s, String s1, int i, int i1) throws ApiException {
+        return null;
+    }
+
+    @Override
+    public Result<List<Utxo>> getUtxos(String s, String s1, int i, int i1, OrderEnum orderEnum) throws ApiException {
+        return null;
+    }
+
+    @Override
+    public Result<Utxo> getTxOutput(String s, int i) throws ApiException {
+        return null;
+    }
 }
