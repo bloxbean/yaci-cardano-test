@@ -5,7 +5,7 @@ import com.bloxbean.cardano.client.api.model.Utxo;
 import com.bloxbean.cardano.client.config.Configuration;
 import com.bloxbean.cardano.client.plutus.annotation.Constr;
 import com.bloxbean.cardano.client.plutus.annotation.PlutusField;
-import com.bloxbean.cardano.client.transaction.spec.PlutusV2Script;
+import com.bloxbean.cardano.client.plutus.spec.PlutusV2Script;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.jetbrains.annotations.NotNull;
@@ -182,7 +182,7 @@ class UtxoListAssertTest {
                         new Amount("96662071b76a743e44c2267e85f5fa86f9a01a1bea53be5dd812378f57455448", BigInteger.valueOf(100))
                 ))
                 .dataHash(Configuration.INSTANCE.getPlutusObjectConverter().toPlutusData(new Datum1(5, 10)).getDatumHash())
-                .referenceScriptHash("820249480100002221200101") //TODO -- this is actually scriptRefBody as current impl. Change it after fix in yaci-store
+                .referenceScriptHash("3a888d65f16790950a72daee1f63aa05add6d268434107cfa5b67712")
                 .build();
 
         Utxo utxo3 = Utxo.builder()

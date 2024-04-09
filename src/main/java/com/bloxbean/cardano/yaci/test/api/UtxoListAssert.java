@@ -2,11 +2,11 @@ package com.bloxbean.cardano.yaci.test.api;
 
 import com.bloxbean.cardano.client.api.model.Amount;
 import com.bloxbean.cardano.client.api.model.Utxo;
+import com.bloxbean.cardano.client.api.util.AssetUtil;
 import com.bloxbean.cardano.client.exception.CborSerializationException;
 import com.bloxbean.cardano.client.plutus.impl.DefaultPlutusObjectConverter;
+import com.bloxbean.cardano.client.plutus.spec.PlutusScript;
 import com.bloxbean.cardano.client.transaction.spec.Asset;
-import com.bloxbean.cardano.client.transaction.spec.PlutusScript;
-import com.bloxbean.cardano.client.util.AssetUtil;
 import com.bloxbean.cardano.client.util.HexUtil;
 import lombok.NonNull;
 import org.assertj.core.api.ListAssert;
@@ -203,11 +203,10 @@ public class UtxoListAssert extends ListAssert<Utxo> {
         isNotNull();
 
         try {
-            String scriptRefHex = HexUtil.encodeHexString(plutusScript.scriptRefBytes());
+            String scriptRefHex = HexUtil.encodeHexString(plutusScript.getScriptHash());
 
             boolean found = actual.stream()
                     .anyMatch(utxo -> scriptRefHex.equals(utxo.getReferenceScriptHash()));
-            //TODO -- The reference script hash in utxo object is actually reference script body. Need to fix this
 
             if (!found)
                 failWithMessage("Expected but not found.\n ReferenceScript : <%s>", scriptRefHex);

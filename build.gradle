@@ -32,8 +32,8 @@ dependencies {
         exclude group: 'com.fasterxml.jackson.core', module: 'jackson-annotations'
     }
 
-    compileOnly 'com.bloxbean.cardano:cardano-client-lib:0.4.3'
-    compileOnly 'com.bloxbean.cardano:cardano-client-backend:0.4.3'
+    implementation 'com.bloxbean.cardano:cardano-client-lib:0.5.1'
+    implementation 'com.bloxbean.cardano:cardano-client-backend:0.5.1'
 
     api 'org.assertj:assertj-core:3.24.2'
 

@@ -1,8 +1,8 @@
 package com.bloxbean.cardano.yaci.test.api;
 
 import com.bloxbean.cardano.client.api.model.Utxo;
+import com.bloxbean.cardano.client.api.util.AssetUtil;
 import com.bloxbean.cardano.client.transaction.spec.Asset;
-import com.bloxbean.cardano.client.util.AssetUtil;
 import com.bloxbean.cardano.yaci.test.YaciCardanoContainer;
 import com.bloxbean.cardano.yaci.test.api.helper.YaciTestHelper;
 import lombok.NonNull;
