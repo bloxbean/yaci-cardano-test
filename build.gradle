@@ -34,6 +34,7 @@ dependencies {
 
     implementation 'com.bloxbean.cardano:cardano-client-lib:0.5.1'
     implementation 'com.bloxbean.cardano:cardano-client-backend:0.5.1'
+    implementation 'com.bloxbean.cardano:cardano-client-backend-ogmios:0.5.1'
 
     api 'org.assertj:assertj-core:3.24.2'
 

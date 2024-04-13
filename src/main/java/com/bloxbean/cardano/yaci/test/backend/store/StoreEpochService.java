@@ -1,19 +1,19 @@
-package com.bloxbean.cardano.yaci.test.backend;
+package com.bloxbean.cardano.yaci.test.backend.store;
 
 import com.bloxbean.cardano.client.api.exception.ApiException;
 import com.bloxbean.cardano.client.api.model.ProtocolParams;
 import com.bloxbean.cardano.client.api.model.Result;
 import com.bloxbean.cardano.client.backend.model.EpochContent;
-import com.bloxbean.cardano.yaci.test.backend.http.EpochApi;
+import com.bloxbean.cardano.yaci.test.backend.store.http.EpochApi;
 import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class EpochService extends BaseService implements com.bloxbean.cardano.client.backend.api.EpochService {
+public class StoreEpochService extends BaseService implements com.bloxbean.cardano.client.backend.api.EpochService {
 
     private EpochApi epochApi;
 
-    public EpochService(String baseUrl, String projectId) {
+    public StoreEpochService(String baseUrl, String projectId) {
         super(baseUrl, projectId);
         this.epochApi = getFeign().target(EpochApi.class, baseUrl);
     }

@@ -3,13 +3,14 @@ package com.bloxbean.cardano.yaci.test;
 import com.bloxbean.cardano.client.api.ProtocolParamsSupplier;
 import com.bloxbean.cardano.client.api.TransactionProcessor;
 import com.bloxbean.cardano.client.api.UtxoSupplier;
-import com.bloxbean.cardano.client.backend.api.DefaultProtocolParamsSupplier;
-import com.bloxbean.cardano.client.backend.api.DefaultTransactionProcessor;
-import com.bloxbean.cardano.client.backend.api.DefaultUtxoSupplier;
+import com.bloxbean.cardano.client.backend.api.*;
+import com.bloxbean.cardano.client.backend.kupo.KupoUtxoService;
+import com.bloxbean.cardano.client.backend.ogmios.http.OgmiosEpochService;
 import com.bloxbean.cardano.yaci.test.api.helper.YaciTestHelper;
-import com.bloxbean.cardano.yaci.test.backend.EpochService;
-import com.bloxbean.cardano.yaci.test.backend.TransactionService;
-import com.bloxbean.cardano.yaci.test.backend.UtxoService;
+import com.bloxbean.cardano.yaci.test.backend.store.StoreEpochService;
+import com.bloxbean.cardano.yaci.test.backend.store.StoreTransactionService;
+import com.bloxbean.cardano.yaci.test.backend.store.StoreUtxoService;
+import com.bloxbean.cardano.yaci.test.backend.ogmios.TestOgmiosTransactionService;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.GenericContainer;
@@ -29,17 +30,20 @@ import java.util.stream.Collectors;
 @Slf4j
 public class YaciCardanoContainer extends GenericContainer<YaciCardanoContainer> {
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("bloxbean/yaci-cli");
-    private static final String DEFAULT_TAG = "0.0.19";
+    private static final String DEFAULT_TAG = "0.0.20-beta1";
     public static final int STORE_PORT = 8080;
     public static final int CLUSTER_HTTP_PORT = 10000;
     public static final int SUBMIT_API_PORT = 8090;
     public static final int NODE_PORT = 3001;
+    public static final int OGMIOS_PORT = 1337;
+    public static final int KUPO_PORT = 1442;
     private static float DEFAULT_SLOT_LENGTH = 1f;
     private static float DEFAULT_BLOCK_TIME = 1f;
     private static long DEFAULT_WAIT_TIMEOUT = 120;
 
     private static long waitTimeout;
 
+    private ApiMode apiMode = ApiMode.YACI_STORE;
     private YaciTestHelper testHelper;
 
     public YaciCardanoContainer() {
@@ -60,8 +64,21 @@ public class YaciCardanoContainer extends GenericContainer<YaciCardanoContainer>
 
         if (blockTime >= 1 && blockTime <= 20) {
             dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
-            withExposedPorts(STORE_PORT, CLUSTER_HTTP_PORT, SUBMIT_API_PORT, NODE_PORT);
-            withCommand("create-cluster", "-o", "--slot-length", String.valueOf(DEFAULT_SLOT_LENGTH), "--block-time", String.valueOf(blockTime), "--start");
+            withExposedPorts(STORE_PORT, CLUSTER_HTTP_PORT, SUBMIT_API_PORT, NODE_PORT, OGMIOS_PORT, KUPO_PORT);
+            withCommand("create-node", "-o", "--slot-length", String.valueOf(DEFAULT_SLOT_LENGTH), "--block-time", String.valueOf(blockTime), "--start");
+        } else {
+            throw new IllegalArgumentException("Invalid blockTime. Value should be between 1 to 20");
+        }
+    }
+
+    @Override
+    public void start() {
+        init();
+        super.start();
+    }
+
+    private void init() {
+        if (apiMode == ApiMode.YACI_STORE) {
             addEnv("yaci_store_enabled", "true");
 
             waitingFor(Wait.forHttp("/api/v1/epochs/parameters")
@@ -70,9 +87,20 @@ public class YaciCardanoContainer extends GenericContainer<YaciCardanoContainer>
                     .forResponsePredicate(resp -> resp.contains("cost_models") && resp.contains("pool_deposit"))
                     .withStartupTimeout(Duration.ofSeconds(waitTimeout)));
             withStartupTimeout(Duration.ofSeconds(waitTimeout));
-        } else {
-            throw new IllegalArgumentException("Invalid blockTime. Value should be between 1 to 20");
-        }
+        } else if (apiMode == ApiMode.OGMIOS) {
+            addEnv("ogmios.enabled", "true");
+            waitingFor(Wait.forHttp("/")
+                    .forPort(OGMIOS_PORT)
+                    .forStatusCode(200)
+                    .withStartupTimeout(Duration.ofSeconds(waitTimeout)));
+            withStartupTimeout(Duration.ofSeconds(waitTimeout));
+        } else
+            throw new IllegalArgumentException("Invalid ApiMode : " + apiMode);
+    }
+
+    public YaciCardanoContainer withApiMode(ApiMode apiMode) {
+        this.apiMode = apiMode;
+        return this;
     }
 
     public YaciCardanoContainer withInitialFunding(Funding... fundings) {
@@ -83,20 +111,23 @@ public class YaciCardanoContainer extends GenericContainer<YaciCardanoContainer>
                 .map(funding -> funding.getAddress() + ":" + funding.getAdaValue())
                 .collect(Collectors.joining(","));
 
-        WaitStrategy waitStrategy = new WaitAllStrategy()
-                .withStrategy(Wait.forHttp("/api/v1/epochs/parameters")
-                        .forPort(STORE_PORT)
-                        .forStatusCode(200)
-                        .forResponsePredicate(resp -> resp.contains("cost_models") && resp.contains("pool_deposit"))
-                        .withStartupTimeout(Duration.ofSeconds(waitTimeout)))
-                .withStrategy(Wait.forHttp("/api/v1/addresses/" + fundings[0].getAddress() + "/utxos")
-                                .forPort(STORE_PORT)
-                                .forResponsePredicate(s -> s.contains(fundings[0].getAddress()))
-                                .forStatusCode(200)
-                                .withStartupTimeout(Duration.ofSeconds(waitTimeout)));
+        if (apiMode == ApiMode.YACI_STORE) {
+            WaitStrategy waitStrategy = new WaitAllStrategy()
+                    .withStrategy(Wait.forHttp("/api/v1/epochs/parameters")
+                            .forPort(STORE_PORT)
+                            .forStatusCode(200)
+                            .forResponsePredicate(resp -> resp.contains("cost_models") && resp.contains("pool_deposit"))
+                            .withStartupTimeout(Duration.ofSeconds(waitTimeout)))
+                    .withStrategy(Wait.forHttp("/api/v1/addresses/" + fundings[0].getAddress() + "/utxos")
+                            .forPort(STORE_PORT)
+                            .forResponsePredicate(s -> s.contains(fundings[0].getAddress()))
+                            .forStatusCode(200)
+                            .withStartupTimeout(Duration.ofSeconds(waitTimeout)));
 
-        //Override default wait strategy if initial funding
-        waitingFor(waitStrategy);
+            //Override default wait strategy if initial funding
+            waitingFor(waitStrategy);
+        }
+
         addEnv("topup_addresses", topupAddresses);
 
         return this;
@@ -104,6 +135,14 @@ public class YaciCardanoContainer extends GenericContainer<YaciCardanoContainer>
 
     public int getYaciStorePort() {
         return getMappedPort(STORE_PORT);
+    }
+
+    public int getOgmiosPort() {
+        return getMappedPort(OGMIOS_PORT);
+    }
+
+    public int getKupoPort() {
+        return getMappedPort(KUPO_PORT);
     }
 
     public int getLocalClusterPort() {
@@ -128,6 +167,21 @@ public class YaciCardanoContainer extends GenericContainer<YaciCardanoContainer>
         return "http://localhost:" + port + "/local-cluster/api/";
     }
 
+    public String getOgmiosHttpUrl() {
+        int port = getOgmiosPort();
+        return "http://localhost:" + port + "/";
+    }
+
+    public String getOgmiosWsUrl() {
+        int port = getOgmiosPort();
+        return "ws://localhost:" + port + "/";
+    }
+
+    public String getKupoUrl() {
+        int port = getKupoPort();
+        return "http://localhost:" + port + "/";
+    }
+
     public UtxoSupplier getUtxoSupplier() {
         return new DefaultUtxoSupplier(getUtxoService());
     }
@@ -143,18 +197,38 @@ public class YaciCardanoContainer extends GenericContainer<YaciCardanoContainer>
 
     @NotNull
     public EpochService getEpochService() {
-        return new EpochService(getYaciStoreApiUrl(), "dummy key");
+        switch (apiMode) {
+            case YACI_STORE:
+                return new StoreEpochService(getYaciStoreApiUrl(), "dummy key");
+            case OGMIOS:
+                return new OgmiosEpochService(getOgmiosHttpUrl());
+            default:
+                throw new IllegalArgumentException("Invalid ApiMode : " + apiMode);
+        }
     }
 
     @NotNull
     public UtxoService getUtxoService() {
-        return new UtxoService(getYaciStoreApiUrl(), "dummy key");
+        switch (apiMode) {
+            case YACI_STORE:
+                return new StoreUtxoService(getYaciStoreApiUrl(), "dummy key");
+            case OGMIOS:
+                return new KupoUtxoService(getKupoUrl());
+            default:
+                throw new IllegalArgumentException("Invalid ApiMode : " + apiMode);
+        }
     }
 
     @NotNull
     public TransactionService getTransactionService() {
-        TransactionService transactionService = new TransactionService(getYaciStoreApiUrl(), "dummy key");
-        return transactionService;
+        switch (apiMode) {
+            case YACI_STORE:
+                return new StoreTransactionService(getYaciStoreApiUrl(), "dummy key");
+            case OGMIOS:
+                return new TestOgmiosTransactionService(getOgmiosHttpUrl(), getKupoUrl());
+            default:
+                throw new IllegalArgumentException("Invalid ApiMode : " + apiMode);
+        }
     }
 
     public YaciTestHelper getTestHelper() {

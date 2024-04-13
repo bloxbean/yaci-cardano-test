@@ -1,4 +1,4 @@
-package com.bloxbean.cardano.yaci.test.backend.http;
+package com.bloxbean.cardano.yaci.test.backend.store.http;
 
 import com.bloxbean.cardano.client.api.model.Utxo;
 import feign.Param;
