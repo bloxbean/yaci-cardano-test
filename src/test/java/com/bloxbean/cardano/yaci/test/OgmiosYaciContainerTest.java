@@ -17,7 +17,10 @@ import com.bloxbean.cardano.client.transaction.spec.Transaction;
 import com.bloxbean.cardano.client.util.PolicyUtil;
 import com.bloxbean.cardano.yaci.test.api.helper.YaciTestHelper;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -32,7 +35,7 @@ import static com.bloxbean.cardano.yaci.test.api.Assertions.assertMe;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
-public class YaciContainerTest {
+public class OgmiosYaciContainerTest {
     private static String senderMnemonic = "flush together outer effort tenant photo waste distance rib grocery aunt broken weather arrow jungle debris finger flee casino doctor group echo baby near";
     private static Account account = new Account(Networks.testnet(), senderMnemonic);
     private static UtxoSupplier utxoSupplier;
@@ -46,6 +49,7 @@ public class YaciContainerTest {
     static void setup() {
         if (!cardanoContainer.isRunning()) {
             cardanoContainer
+                    .withApiMode(ApiMode.OGMIOS)
                     .withInitialFunding(new Funding(account.baseAddress(), 20000))
                     .withLogConsumer(outputFrame -> log.info(outputFrame.getUtf8String()))
                     .start();

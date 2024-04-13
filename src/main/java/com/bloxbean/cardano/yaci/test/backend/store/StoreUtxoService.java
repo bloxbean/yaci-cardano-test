@@ -1,21 +1,21 @@
-package com.bloxbean.cardano.yaci.test.backend;
+package com.bloxbean.cardano.yaci.test.backend.store;
 
 import com.bloxbean.cardano.client.api.common.OrderEnum;
 import com.bloxbean.cardano.client.api.exception.ApiException;
 import com.bloxbean.cardano.client.api.model.Result;
 import com.bloxbean.cardano.client.api.model.Utxo;
-import com.bloxbean.cardano.yaci.test.backend.http.AddressesApi;
+import com.bloxbean.cardano.yaci.test.backend.store.http.AddressesApi;
 import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
 @Slf4j
-public class UtxoService extends BaseService implements com.bloxbean.cardano.client.backend.api.UtxoService {
+public class StoreUtxoService extends BaseService implements com.bloxbean.cardano.client.backend.api.UtxoService {
 
     private AddressesApi addressApi;
 
-    public UtxoService(String baseUrl, String projectId) {
+    public StoreUtxoService(String baseUrl, String projectId) {
         super(baseUrl, projectId);
         this.addressApi = getFeign().target(AddressesApi.class, baseUrl);
     }
