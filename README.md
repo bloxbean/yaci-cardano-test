@@ -93,6 +93,7 @@ yaciCardanoContainer.start();
 
 ```java
  YaciCardanoContainer yaciCardanoContainer = new YaciCardanoContainer()
+                .withApiMode(ApiMode.OGMIOS)
                 .withInitialFunding(new Funding(account.baseAddress(), 20000))
                 .withLogConsumer(outputFrame -> System.out.println(outputFrame.getUtf8String()));
 
