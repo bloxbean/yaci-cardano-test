@@ -41,6 +41,11 @@ You also need to add following cardano-client-lib dependencies and also junit 5.
      <artifactId>cardano-client-backend-ogmios</artifactId>
      <version>0.6.2</version>
 </dependency>
+<dependency>
+     <groupId>com.bloxbean.cardano</groupId>
+     <artifactId>cardano-client-backend-blockfrost</artifactId>
+     <version>0.6.2</version>
+ </dependency>
  <dependency>
      <groupId>org.junit.jupiter</groupId>
      <artifactId>junit-jupiter-engine</artifactId>
@@ -62,6 +67,7 @@ Other dependencies
 implementation "com.bloxbean.cardano:cardano-client-lib:0.6.2"
 implementation "com.bloxbean.cardano:cardano-client-backend:0.6.2"
 implementation "com.bloxbean.cardano:cardano-client-backend-ogmios:0.6.2"
+implementation "com.bloxbean.cardano:cardano-client-backend-blockfrost:0.6.2"
 
 testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.2'
 testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.2'
