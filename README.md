@@ -19,7 +19,7 @@ in your test code through a Test Helper class and use Cardano specific assertion
   <dependency>
      <groupId>com.bloxbean.cardano</groupId>
      <artifactId>yaci-cardano-test</artifactId>
-     <version>0.0.2</version>
+     <version>0.1.0</version>
      <scope>test</scope>
   </dependency>
 ```
@@ -29,17 +29,17 @@ You also need to add following cardano-client-lib dependencies and also junit 5.
 <dependency>
      <groupId>com.bloxbean.cardano</groupId>
      <artifactId>cardano-client-lib</artifactId>
-     <version>0.5.1</version>
+     <version>0.6.2</version>
 </dependency>
 <dependency>
      <groupId>com.bloxbean.cardano</groupId>
      <artifactId>cardano-client-backend</artifactId>
-     <version>0.5.1</version>
+     <version>0.6.2</version>
 </dependency>
 <dependency>
      <groupId>com.bloxbean.cardano</groupId>
      <artifactId>cardano-client-backend-ogmios</artifactId>
-     <version>0.5.1</version>
+     <version>0.6.2</version>
 </dependency>
  <dependency>
      <groupId>org.junit.jupiter</groupId>
@@ -53,15 +53,15 @@ You also need to add following cardano-client-lib dependencies and also junit 5.
 ### Gradle Dependencies
 
 ```
-testImplementation "com.bloxbean.cardano:yaci-cardano-test:0.0.2"
+testImplementation "com.bloxbean.cardano:yaci-cardano-test:0.1.0"
 ```
 
 Other dependencies
 
 ```
-implementation "com.bloxbean.cardano:cardano-client-lib:0.5.1"
-implementation "com.bloxbean.cardano:cardano-client-backend:0.5.1"
-implementation "com.bloxbean.cardano:cardano-client-backend-ogmios:0.5.1"
+implementation "com.bloxbean.cardano:cardano-client-lib:0.6.2"
+implementation "com.bloxbean.cardano:cardano-client-backend:0.6.2"
+implementation "com.bloxbean.cardano:cardano-client-backend-ogmios:0.6.2"
 
 testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.2'
 testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.2'
@@ -83,7 +83,7 @@ YaciCardanoContainer yaciCardanoContainer = new YaciCardanoContainer()
 yaciCardanoContainer.start();
 ```
 
-### Start a Cardano Node with Ogmios Api Support
+### Start a Cardano Node with Ogmios & Kupo Api Support
 
 ```java
  YaciCardanoContainer yaciCardanoContainer = new YaciCardanoContainer()
@@ -99,6 +99,8 @@ yaciCardanoContainer.start();
 Get Cardano Client Lib Suppliers required to build and submit transactions
 
 ```java
+var backendService = yaciCardanoContainer.getBackendService();
+
 var utxoSupplier = yaciCardanoContainer.getUtxoSupplier();
 var protocolParamsSupplier = yaciCardanoContainer.getProtocolParamsSupplier();
 var transactionProcessor = yaciCardanoContainer.getTransactionProcessor();
