@@ -161,8 +161,7 @@ class UtxoListAssertTest {
                 ))
                 .build();
 
-        List<Utxo> utxos = List.of(utxo1, utxo2, utxo3);
-        return utxos;
+        return List.of(utxo1, utxo2, utxo3);
     }
 
     @NotNull
@@ -204,8 +203,7 @@ class UtxoListAssertTest {
                 ))
                 .inlineDatum(Configuration.INSTANCE.getPlutusObjectConverter().toPlutusData(new Datum2("John")).serializeToHex())
                 .build();
-        List<Utxo> utxos = List.of(utxo1, utxo2, utxo3, utxo4);
-        return utxos;
+        return List.of(utxo1, utxo2, utxo3, utxo4);
     }
 
     @Data
