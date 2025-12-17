@@ -4,6 +4,8 @@ import com.bloxbean.cardano.client.account.Account;
 import com.bloxbean.cardano.client.api.ProtocolParamsSupplier;
 import com.bloxbean.cardano.client.api.UtxoSupplier;
 import com.bloxbean.cardano.client.api.model.Result;
+import com.bloxbean.cardano.client.api.model.Utxo;
+import com.bloxbean.cardano.client.api.util.PolicyUtil;
 import com.bloxbean.cardano.client.backend.api.TransactionService;
 import com.bloxbean.cardano.client.common.model.Networks;
 import com.bloxbean.cardano.client.function.Output;
@@ -14,16 +16,13 @@ import com.bloxbean.cardano.client.transaction.spec.Asset;
 import com.bloxbean.cardano.client.transaction.spec.MultiAsset;
 import com.bloxbean.cardano.client.transaction.spec.Policy;
 import com.bloxbean.cardano.client.transaction.spec.Transaction;
-import com.bloxbean.cardano.client.util.PolicyUtil;
 import com.bloxbean.cardano.yaci.test.api.helper.YaciTestHelper;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Optional;
 
 import static com.bloxbean.cardano.client.common.ADAConversionUtil.adaToLovelace;
 import static com.bloxbean.cardano.client.common.CardanoConstants.LOVELACE;
@@ -35,18 +34,20 @@ import static com.bloxbean.cardano.yaci.test.api.Assertions.assertMe;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class OgmiosYaciContainerTest {
-    private static String senderMnemonic = "flush together outer effort tenant photo waste distance rib grocery aunt broken weather arrow jungle debris finger flee casino doctor group echo baby near";
-    private static Account account = new Account(Networks.testnet(), senderMnemonic);
+    private static final String senderMnemonic = "flush together outer effort tenant photo waste distance rib grocery aunt broken weather arrow jungle debris finger flee casino doctor group echo baby near";
+    private static final Account account = Account.createFromMnemonic(Networks.testnet(), senderMnemonic);
     private static UtxoSupplier utxoSupplier;
     private static ProtocolParamsSupplier protocolParamSupplier;
     private static TransactionService transactionService;
 
-    private static YaciCardanoContainer cardanoContainer = new YaciCardanoContainer();
-    private static YaciTestHelper testHelper = cardanoContainer.getTestHelper();
+    private static final YaciCardanoContainer cardanoContainer = new YaciCardanoContainer();
+    private static final YaciTestHelper testHelper = cardanoContainer.getTestHelper();
 
     @BeforeAll
-    static void setup() {
+    void setup() throws InterruptedException {
         if (!cardanoContainer.isRunning()) {
             cardanoContainer
                     .withApiMode(ApiMode.OGMIOS)
@@ -58,9 +59,20 @@ public class OgmiosYaciContainerTest {
             protocolParamSupplier = cardanoContainer.getProtocolParamsSupplier();
             transactionService = cardanoContainer.getTransactionService();
         }
+        log.info("Waiting for Kupo and Ogmios to be ready...");
+        List<Utxo> utxos = utxoSupplier.getAll(account.baseAddress());
+        int retries = 4;
+
+        while (utxos.size() == 0 || retries < 0) {
+            utxos = utxoSupplier.getAll(account.baseAddress());
+            retries--;
+            //noinspection BusyWait
+            Thread.sleep(2000);
+        }
     }
 
     @Test
+    @Order(1)
     void transfer_lovelace() throws Exception {
         String senderAddress = account.baseAddress();
         log.info("Sender address : " + senderAddress);
@@ -89,6 +101,7 @@ public class OgmiosYaciContainerTest {
     }
 
     @Test
+    @Order(2)
     void mint_transfer_assets() throws Exception {
         String senderAddress = account.baseAddress();
         log.info("Sender address : " + senderAddress);
@@ -165,6 +178,7 @@ public class OgmiosYaciContainerTest {
     }
 
     @Test
+    @Order(3)
     void transferTest() throws Exception {
         String senderAddress = account.baseAddress();
         log.info("Sender address : " + senderAddress);
@@ -186,8 +200,11 @@ public class OgmiosYaciContainerTest {
         Result<String> result = transactionService.submitTransaction(signedTransaction.serialize());
         testHelper.waitForTransactionHash(result);
 
-        System.out.println(result);
-        assertThat(testHelper.lovelaceBalance(receiverAddress).get()).isEqualTo(adaToLovelace(2.1));
+        Optional<BigInteger> lovelaceBalance = testHelper.lovelaceBalance(receiverAddress);
+
+        assertThat(lovelaceBalance).isPresent();
+        
+        assertThat(lovelaceBalance.get()).isEqualTo(adaToLovelace(2.1));
         assertThat(testHelper.amounts(receiverAddress)).hasSize(1);
     }
 
